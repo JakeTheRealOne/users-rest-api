@@ -12,6 +12,15 @@ Website and API for user management
 
 Clone this repo.
 
+### Dependencies
+
+Make sure to have nodejs 22 installed on your machine.
+
+```
+npm init -y
+npm install express
+```
+
 ## Execution
 
 ```
