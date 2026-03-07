@@ -2,8 +2,6 @@
 
 Website and API for user management
 
-## Navigation
-
 ## Author
 
 | **First name** | **Last name** | **Student number** |
