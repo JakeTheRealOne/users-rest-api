@@ -8,7 +8,7 @@
 
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
-const { ZERUH_API_KEY, PW_SALT_ROUNDS } = require('./config');
+const { ZERUH_API_KEY, PW_SALT_ROUNDS, JWT_SECRET } = require('./config');
 
 // #### password ####
 
@@ -63,7 +63,7 @@ async function isValidEmail(str) {
 }
 
 // Check if the json input of user creation is valid
-function isValidCInput(email, username, password, isadmin) {
+function isValidCreateInput(email, username, password, isadmin) {
     return (email !== undefined &&
         username !== undefined &&
         password !== undefined &&
@@ -72,18 +72,44 @@ function isValidCInput(email, username, password, isadmin) {
 
 // Encrypt a password for db storage
 async function encrypt(password) {
-    return await bcrypt.hash(password, PW_SALT_ROUNDS);
+    let result = null;
+    await bcrypt.hash(password, PW_SALT_ROUNDS).then((hash) => {
+        result = hash;
+    }).catch((err) => {
+        console.log("[Bcrypt] encrypt err - " + err);
+    });
+    return result;
 }
 
 // Check if password is same as db
-async function auth(plain_pw, saved_pw) {
-    return await bcrypt.compare(plain_pw, saved_pw);
+async function verify(plain_pw, saved_pw) {
+    if (saved_pw === undefined) {
+        return false;
+    }
+    try {
+        const isValid =  await bcrypt.compare(plain_pw, saved_pw);
+        return isValid;
+    } catch (err) {
+        console.log("[Bcrypt] verify err - " + err);
+    }
+
+    return false;
 }
 
 // #### Login ####
-function tokenSecret() {
-    return crypto.randomBytes(32).toString('hex');
+
+// Check if the json input of user login is valid
+function isValidLoginInput(email, password) {
+    return (email !== undefined &&
+        password !== undefined);
 }
 
 
-module.exports = { randomPassword, isValidLength, isValidEmail, isValidCInput, encrypt, auth, tokenSecret };
+// Get the secret for the web token
+function tokenSecret() {
+    return JWT_SECRET;
+    //return crypto.randomBytes(32).toString('hex');
+}
+
+
+module.exports = { randomPassword, isValidLength, isValidEmail, isValidCreateInput, encrypt, verify, tokenSecret, isValidLoginInput };

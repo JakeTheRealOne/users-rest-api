@@ -7,8 +7,8 @@
  */
 
 const mongoose = require('mongoose');
-const uniqueValidator = require('mongoose-unique-validator');
-const { auth, encrypt } = require('./utils');
+const uniqueValidator = require('mongoose-unique-validator').default;
+const { verify, encrypt } = require('./utils');
 const { MONGODB_USERNAME, MONGODB_PASSWORD } = require('./config');
 
 function urlDB() {
@@ -80,19 +80,21 @@ async function addUser(email, username, password, isadmin) {
     let success = false;
     model = getDB();
 
-    const user = new model({
-        "email": email,
-        "username": username,
-        "password": await encrypt(password),
-        "isadmin": isadmin
-    });
-
-    await user.save().then(() => {
-        console.log("[MongoDB] new user created - " + email);
-        success = true;
-    }).catch((error) => {
-        console.log("[MongoDB] error - " + error);
-    });
+    const encrypted_pw = await encrypt(password);
+    if (encrypted_pw !== null) {
+        const user = new model({
+            "email": email,
+            "username": username,
+            "password": encrypted_pw,
+            "isadmin": isadmin
+        });
+        await user.save().then(() => {
+            console.log("[MongoDB] new user created - " + email);
+            success = true;
+        }).catch((error) => {
+            console.log("[MongoDB] error - " + error);
+        });
+    }
 
     return success;
 }
@@ -114,16 +116,45 @@ function editUser(
     // TODO
 }
 
-function isAdmin(id) {
-    // TODO -> bool
-}
-
-function hashedPasswordOf(id) {
-    // TODO -> str
-}
-
 function getUser(id) {
     // TODO -> {id, email, username, isadmin, cdate, lmdate}
 }
 
-module.exports = { initDB, emailExists, usernameExists, addUser, editUser, removeUser, isAdmin, getUser };
+// Check if a user is an admin
+async function isAdmin(id) {
+    if (id === null) {
+        return null;
+    }
+
+    const user = await model.findById(id);
+    return user ? user.isadmin : null;
+}
+
+// Return the _id of an email adress
+async function idOf(email) {
+    if (!(await initDB())) {
+        return null;
+    }
+
+    model = getDB();
+
+    try {
+        const user = await model.findOne({ email: email });
+        return user ? user._id : null;
+    } catch (err) {
+        throw err;
+    }
+}
+
+// Return the hashed password of a user
+async function hashedPasswordOf(id) {
+    if (id === null) {
+        return null;
+    }
+
+    const user = await model.findById(id);
+    return user ? user.password : null;
+}
+
+
+module.exports = { initDB, emailExists, usernameExists, addUser, editUser, removeUser, isAdmin, getUser, hashedPasswordOf, idOf };

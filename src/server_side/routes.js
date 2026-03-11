@@ -8,8 +8,10 @@
 
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const { randomPassword, isValidLength, isValidCInput, isValidEmail, tokenSecret } = require('./utils');
-const { emailExists, addUser } = require('./database');
+const { randomPassword, isValidLength, isValidCreateInput, isValidEmail, tokenSecret, isValidLoginInput, verify } = require('./utils');
+const { emailExists, addUser, hashedPasswordOf, idOf } = require('./database');
+const authentification = require('./authentification');
+const authorization = require('./authorization');
 const app = express();
 
 app.use(express.json());
@@ -37,7 +39,7 @@ app.post("/profils", async (req, res, next) => {
     const input_password = req.body.password;
     const input_isadmin = req.body.isadmin;
 
-    if (!isValidCInput(input_email, input_username, input_password, input_isadmin)) { // Missing email, username or password in json
+    if (!isValidCreateInput(input_email, input_username, input_password, input_isadmin)) { // Missing email, username or password in json
         res.status(400);
         res.json({
             return: 322504
@@ -72,24 +74,41 @@ app.post("/profils", async (req, res, next) => {
     next();
 });
 
-// app.post("/connexion", async (req, res, next) => {
-//     const input_email = req.body.email;
-//     const input_password = req.body.password;
+app.post("/connexion", async (req, res, next) => {
+    const input_email = req.body.email;
+    const input_password = req.body.password;
 
-//     res.status(200);
-//     res.json({
-//         return: 322500,
-//         id: "USER ID",
-//         token: jwt.sign(
-//             { userId: user._id },
-//             tokenSecret(),
-//             { expiresIn: '24h' }
-//         ),
-//     });
-//     next();
-// })
+    if (!isValidLoginInput(input_email, input_password)) { // Bad json
+        res.status(400).json({
+            return: 322504
+        });
+        next();
+    } else if ((await emailExists(input_email)) !== 1) { // Email not registered
+        res.status(400).json({
+            return: 322506
+        });
+        next();
+    } else if (!(await verify(input_password, await hashedPasswordOf(await idOf(input_email))))) {
+        res.status(400).json({
+            return: 322505
+        });
+        next();
+    } else {
+        res.status(200);
+        res.json({
+            return: 322500,
+            id: String(await idOf(input_email)),
+            token: jwt.sign(
+                { userId: String(await idOf(input_email)) },
+                tokenSecret(),
+                { expiresIn: '24h' }
+            ),
+        });
+        next();
+    }
+})
 
-app.delete("/profils/:id", (req, res, next) => {
+app.delete("/profils/:id", authentification, authorization, (req, res, next) => {
     res.status(200);
     res.json({
         return: 322500,
