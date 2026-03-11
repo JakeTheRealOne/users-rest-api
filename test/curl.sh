@@ -7,6 +7,7 @@ echo " "
 # Create user
 curl --header "Content-Type: application/json" \
   --request POST \
+  -d '{"email": "jakelevrai@outlook.be", "password": "ilikemen123", "username": "jake"}' \
   http://localhost:3225/profils
 echo " "
 
