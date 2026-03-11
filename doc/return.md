@@ -11,7 +11,6 @@ When requesting the express.js server, the json reponse will always contains a "
 | 322504 | Bad json input                             |
 | 322505 | Invalid password                           |
 | 322506 | Email already registered                   |
-| 322507 | Username already registered                |
-| 322508 | Invalid email                              |
-| 322509 | Unkown user id                             |
-| 322510 | Password length should be between 1 and 60 |
+| 322507 | Invalid email                              |
+| 322508 | Unkown user id                             |
+| 322509 | Password length should be between 1 and 60 |

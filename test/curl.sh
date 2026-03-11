@@ -4,10 +4,17 @@ curl --header "Content-Type: application/json" \
   http://localhost:3225/motdepasse/10
 echo " "
 
+# # Login
+# curl --header "Content-Type: application/json" \
+#   --request POST \
+#   -d '{"email": "bilal.vandenberge@umontreal.ca", "password": "ilikemen123"}' \
+#   http://localhost:3225/connexion
+# echo " "
+
 # Create user
 curl --header "Content-Type: application/json" \
   --request POST \
-  -d '{"email": "jakelevrai@outlook.be", "password": "ilikemen123", "username": "jake"}' \
+  -d '{"email": "bilal.vandenberge@umontreal.ca", "password": "ilikemen123", "username": "bilal", "isadmin": false}' \
   http://localhost:3225/profils
 echo " "
 

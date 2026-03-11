@@ -7,7 +7,8 @@
  */
 
 const crypto = require('crypto');
-const { ZERUH_API_KEY } = require('./config');
+const bcrypt = require('bcrypt');
+const { ZERUH_API_KEY, PW_SALT_ROUNDS } = require('./config');
 
 // #### password ####
 
@@ -61,10 +62,28 @@ async function isValidEmail(str) {
     return isValid;
 }
 
-function isValidCInput(email, username, password) {
+// Check if the json input of user creation is valid
+function isValidCInput(email, username, password, isadmin) {
     return (email !== undefined &&
         username !== undefined &&
-        password !== undefined);
+        password !== undefined &&
+        isadmin !== undefined);
 }
 
-module.exports = { randomPassword, isValidLength, isValidEmail, isValidCInput };
+// Encrypt a password for db storage
+async function encrypt(password) {
+    return await bcrypt.hash(password, PW_SALT_ROUNDS);
+}
+
+// Check if password is same as db
+async function auth(plain_pw, saved_pw) {
+    return await bcrypt.compare(plain_pw, saved_pw);
+}
+
+// #### Login ####
+function tokenSecret() {
+    return crypto.randomBytes(32).toString('hex');
+}
+
+
+module.exports = { randomPassword, isValidLength, isValidEmail, isValidCInput, encrypt, auth, tokenSecret };
