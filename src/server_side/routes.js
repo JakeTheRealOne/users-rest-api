@@ -9,9 +9,10 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const { randomPassword, isValidLength, isValidCreateInput, isValidEmail, tokenSecret, isValidLoginInput, verify } = require('./utils');
-const { emailExists, addUser, hashedPasswordOf, idOf } = require('./database');
+const { emailExists, addUser, hashedPasswordOf, idOf, deleteUser } = require('./database');
 const authentification = require('./authentification');
 const authorization = require('./authorization');
+const I_am_me = require('./I_am_me');
 const app = express();
 
 app.use(express.json());
@@ -108,16 +109,34 @@ app.post("/connexion", async (req, res, next) => {
     }
 })
 
-app.delete("/profils/:id", authentification, authorization, (req, res, next) => {
-    res.status(200);
-    res.json({
-        return: 322500,
-        message: `delete user with id ${req.params.id}`
-    });
+app.delete("/profils/:id", authentification, authorization, async (req, res, next) => {
+    const input_id = req.body.email;
+    if (!isValidDeleteInput(input_id)) { // Bad json
+        res.status(400).json({
+            return: 322504
+        });
+        next();
+    } else if (!(await deleteUser(input_id))) {
+        res.status(500);
+        res.json({
+            return: 322502
+        });
+    } else {
+        res.status(200);
+        res.json({
+            return: 322500
+        });
+    }
+
+    // res.status(200);
+    // res.json({
+    //     return: 322500,
+    //     message: `delete user with id ${req.params.id}`
+    // });
     next();
 });
 
-app.get("/profils", (req, res, next) => {
+app.get("/profils", authentification, authorization, (req, res, next) => {
     res.status(200);
     res.json({
         return: 322500,
@@ -126,7 +145,7 @@ app.get("/profils", (req, res, next) => {
     next();
 });
 
-app.get("/profils/:id", (req, res, next) => {
+app.get("/profils/:id", authentification, (req, res, next) => {
     res.status(200);
     res.json({
         return: 322500,
@@ -135,7 +154,7 @@ app.get("/profils/:id", (req, res, next) => {
     next();
 });
 
-app.put("/profils/:id", (req, res, next) => {
+app.put("/profils/:id", authentification, I_am_me, (req, res, next) => {
     res.status(200);
     res.json({
         return: 322500,

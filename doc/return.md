@@ -15,3 +15,4 @@ When requesting the express.js server, the json reponse will always contains a "
 | 322508 | Unkown user id                             |
 | 322509 | Password length should be between 1 and 60 |
 | 322510 | Web token is invalid (refresh needed)      |
+| 322511 | Only a user may change its informations    |

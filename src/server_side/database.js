@@ -100,8 +100,8 @@ async function addUser(email, username, password, isadmin) {
 }
 
 // Remove user from db (no check done)
-function removeUser(id) {
-    // TODO
+async function deleteUser(id) {
+        
 }
 
 // Edit user from db (no check done)
@@ -156,5 +156,14 @@ async function hashedPasswordOf(id) {
     return user ? user.password : null;
 }
 
+// Check if a user exists
+async function exists(id) {
+    if (!(await initDB())) {
+        return false;
+    }
+    model = getDB();
+    return await model.exists({ _id: id });
+}
 
-module.exports = { initDB, emailExists, usernameExists, addUser, editUser, removeUser, isAdmin, getUser, hashedPasswordOf, idOf };
+
+module.exports = { initDB, emailExists, usernameExists, addUser, editUser, deleteUser, isAdmin, getUser, hashedPasswordOf, idOf, exists };
