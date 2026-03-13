@@ -17,6 +17,13 @@ const app = express();
 
 app.use(express.json());
 
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    next();
+});
+
 app.get("/motdepasse/:length", (req, res, next) => {
     const length = req.params.length;
     if (isValidLength(length)) {
@@ -86,7 +93,7 @@ app.post("/connexion", async (req, res, next) => {
         next();
     } else if ((await emailExists(input_email)) !== 1) { // Email not registered
         res.status(400).json({
-            return: 322506
+            return: 322507
         });
         next();
     } else if (!(await verify(input_password, await hashedPasswordOf(await idOf(input_email))))) {

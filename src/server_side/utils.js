@@ -100,8 +100,7 @@ async function verify(plain_pw, saved_pw) {
 
 // Check if the json input of user login is valid
 function isValidLoginInput(email, password) {
-    return (email !== undefined &&
-        password !== undefined);
+    return (email && password);
 }
 
 
