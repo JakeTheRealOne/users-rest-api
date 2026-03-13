@@ -9,7 +9,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const { randomPassword, isValidLength, isValidCreateInput, isValidEmail, tokenSecret, isValidLoginInput, verify } = require('./utils');
-const { emailExists, addUser, hashedPasswordOf, idOf, deleteUser } = require('./database');
+const { emailExists, addUser, hashedPasswordOf, idOf, deleteUser, getAllUsers, getUser } = require('./database');
 const authentification = require('./authentification');
 const authorization = require('./authorization');
 const I_am_me = require('./I_am_me');
@@ -110,13 +110,8 @@ app.post("/connexion", async (req, res, next) => {
 })
 
 app.delete("/profils/:id", authentification, authorization, async (req, res, next) => {
-    const input_id = req.body.email;
-    if (!isValidDeleteInput(input_id)) { // Bad json
-        res.status(400).json({
-            return: 322504
-        });
-        next();
-    } else if (!(await deleteUser(input_id))) {
+    const input_id = req.params.id;
+    if (!(await deleteUser(input_id))) {
         res.status(500);
         res.json({
             return: 322502
@@ -128,29 +123,46 @@ app.delete("/profils/:id", authentification, authorization, async (req, res, nex
         });
     }
 
-    // res.status(200);
-    // res.json({
-    //     return: 322500,
-    //     message: `delete user with id ${req.params.id}`
-    // });
     next();
 });
 
-app.get("/profils", authentification, authorization, (req, res, next) => {
-    res.status(200);
-    res.json({
-        return: 322500,
-        message: "read all users"
-    });
+app.get("/profils", authentification, authorization, async (req, res, next) => {
+    try {
+        const docs = await getAllUsers();
+        if (docs === null) {
+            res.status(500).json({
+                return: 322502
+            })
+        } else {
+            res.status(200).json({
+                return: 322500,
+                users: docs
+            })
+        }
+    } catch (err) {
+        res.status(500).json({
+            return: 322501
+        })
+    }
+
     next();
 });
 
-app.get("/profils/:id", authentification, (req, res, next) => {
-    res.status(200);
-    res.json({
-        return: 322500,
-        message: `read user with id ${req.params.id}`
-    });
+app.get("/profils/:id", authentification, async (req, res, next) => {
+    const targetId = req.params.id
+
+    try {
+        const doc = await getUser(targetId);
+        res.status(200).json({
+            return: 322500,
+            user: doc
+        })
+    } catch (err) {
+        res.status(500).json({
+            return: 322501
+        })
+    }
+
     next();
 });
 

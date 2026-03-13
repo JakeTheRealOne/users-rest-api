@@ -10,13 +10,13 @@ const jwt = require("jsonwebtoken");
 const { exists } = require('./database');
 const { JWT_SECRET } = require('./config');
 
-module.exports = (req, res, next) => {
+module.exports = async (req, res, next) => {
     try {
         const token = req.headers.authorization;
         const decoded = jwt.verify(token, JWT_SECRET);
         const id = decoded.userId;
 
-        if (!exists(id)) {
+        if (!(await exists(id))) {
             throw("User no longer in database");
         }
 

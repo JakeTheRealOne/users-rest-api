@@ -101,7 +101,22 @@ async function addUser(email, username, password, isadmin) {
 
 // Remove user from db (no check done)
 async function deleteUser(id) {
-        
+    if (!(await initDB())) {
+        return false;
+    }
+
+    try {
+        model = getDB();
+        const user = await model.findByIdAndDelete(id);
+        if (user) {
+            console.log(`[MongoDB] user deleted - ${user.email}`);
+        } else {
+            throw Error("Unkown document in database");
+        }
+    } catch (err) {
+        return false;
+    }
+    return true;
 }
 
 // Edit user from db (no check done)
@@ -116,8 +131,13 @@ function editUser(
     // TODO
 }
 
-function getUser(id) {
-    // TODO -> {id, email, username, isadmin, cdate, lmdate}
+async function getUser(id) {
+    if (!(await initDB())) {
+        return null;
+    }
+    model = getDB();
+    const user = await model.findById(id).select('-password -__v');
+    return user;
 }
 
 // Check if a user is an admin
@@ -162,8 +182,17 @@ async function exists(id) {
         return false;
     }
     model = getDB();
-    return await model.exists({ _id: id });
+    return (await model.exists({ _id: id })) !== null;
 }
 
+// Get all users in the db (password omited)
+async function getAllUsers() {
+    if (!(await initDB())) {
+        return null;
+    }
+    model = getDB();
+    const users = await model.find({}).select('-password -__v');
+    return users;
+}
 
-module.exports = { initDB, emailExists, usernameExists, addUser, editUser, deleteUser, isAdmin, getUser, hashedPasswordOf, idOf, exists };
+module.exports = { initDB, emailExists, usernameExists, addUser, editUser, deleteUser, isAdmin, getUser, hashedPasswordOf, idOf, exists, getAllUsers };

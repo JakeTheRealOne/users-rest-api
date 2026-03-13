@@ -111,5 +111,4 @@ function tokenSecret() {
     //return crypto.randomBytes(32).toString('hex');
 }
 
-
 module.exports = { randomPassword, isValidLength, isValidEmail, isValidCreateInput, encrypt, verify, tokenSecret, isValidLoginInput };
