@@ -116,7 +116,7 @@ app.post("/connexion", async (req, res, next) => {
     }
 })
 
-app.get("/moi", authentification, (req, res, next) => {
+app.get("/self", authentification, (req, res, next) => {
     if (!req.auth.userId) { // Not supposed to happend
         res.status(500).json({
             return: 322501
@@ -169,7 +169,7 @@ app.get("/profils", authentification, authorization, async (req, res, next) => {
     next();
 });
 
-app.get("/profils/:id", authentification, async (req, res, next) => {
+app.get("/profils/:id", authentification, I_am_me, async (req, res, next) => {
     const targetId = req.params.id
 
     try {

@@ -30,3 +30,5 @@ TODO
 ## License
 
 This is a project for the cours "IFT3225" of the University of Montreal and is under the GNU General Public License v3.
+
+<small>Made by humans for humans</small>

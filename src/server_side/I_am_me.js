@@ -3,7 +3,7 @@
  * 
  * Author: Bilal Vandenberge
  * Date:   March 2026
- * Brief:  Check if the target is myself
+ * Brief:  Check if the target is myself **OR** an admin
  */
 
 const { isAdmin } = require('./database');
@@ -14,7 +14,7 @@ module.exports = async (req, res, next) => {
         const targetId = req.params.id;
         console.log(userId);
         console.log(targetId);
-        if (!userId || !targetId || userId !== targetId) {
+        if (!userId || !targetId || (userId !== targetId && !(await isAdmin(userId)))) {
             throw Error("You are not you");
         }
         next();
