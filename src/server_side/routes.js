@@ -116,6 +116,20 @@ app.post("/connexion", async (req, res, next) => {
     }
 })
 
+app.get("/moi", authentification, (req, res, next) => {
+    if (!req.auth.userId) { // Not supposed to happend
+        res.status(500).json({
+            return: 322501
+        });
+    } else {
+        res.status(200).json({
+            return: 322500,
+            id: req.auth.userId
+        });
+    }
+    next();
+})
+
 app.delete("/profils/:id", authentification, authorization, async (req, res, next) => {
     const input_id = req.params.id;
     if (!(await deleteUser(input_id))) {
