@@ -116,12 +116,168 @@ function CreationForm({ token, modEnable }) {
   )
 }
 
-function DeletionForm() {
-  return (
-    <>
-      <h1>Deletion form</h1>
-    </>
-  )
+function DeletionForm({ modEnable, token, isAdmin }) {
+  const [user, setUser] = useState({
+    "id": null
+  });
+  const [confirmeduser, setConfirmeduser] = useState({
+    "id": "",
+    "email": "",
+    "username": "",
+    "isadmin": false
+  })
+
+  const [getting, setGetting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deletingError, setDeletingError] = useState("");
+  const [formKey, setFormKey] = useState(0);
+
+  useEffect(() => {
+    if (getting) {
+      // Get user informations for deletion confirmation
+      setDeletingError("");
+
+      if (user.id) {
+        fetch("http://localhost:3225/profils/" + user.id, {
+          method: "GET",
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': token
+          },
+        })
+          .then((response) => response.json())
+          .then((response) => {
+            console.log("get: " + JSON.stringify(response));
+            if (response.return === 322500) {
+              setConfirmeduser({
+                "username": response.user.username,
+                "email": response.user.email,
+                "id": response.user._id,
+                "isadmin": response.user.isadmin
+              })
+              console.log("got: " + JSON.stringify(response.user));
+            } else {
+              setDeletingError("Failed " + response.return);
+            }
+          })
+          .catch((err) => {
+            console.log("Error: " + err);
+          })
+          .then(() => {
+            setGetting(false);
+          });
+      } else {
+        setDeletingError("No id given");
+      }
+    }
+
+    if (deleting) {
+      // Send deletion request
+      setDeletingError("");
+
+      if (confirmeduser.id) {
+        fetch("http://localhost:3225/profils/" + confirmeduser.id, {
+          method: "DELETE",
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': token
+          },
+        })
+          .then((response) => response.json())
+          .then((response) => {
+            if (response.return === 322500) {
+              setUser({
+                "id": ""
+              });
+              setFormKey(formKey + 1); // Clear the form
+            } else {
+              setDeletingError("Failed " + response.return);
+            }
+          })
+          .catch((err) => {
+            console.log("Error: " + err);
+          })
+          .then(() => {
+            setDeleting(false);
+            setConfirmeduser({
+              "id": "",
+              "email": "",
+              "username": "",
+              "isadmin": false
+            });
+          });
+      }
+    }
+  }, [getting, deleting]);
+
+  function submitButtonClicked(e) {
+    if (!getting) {
+      setGetting(true);
+    }
+    e.preventDefault();
+  }
+
+  function gobackButtonClicked(e) {
+    modEnable(false);
+  }
+
+  function cancelButtonClicked(e) {
+    setConfirmeduser({
+      "id": "",
+      "email": "",
+      "username": "",
+      "isadmin": false
+    });
+  }
+
+  function confirmButtonClicked(e) {
+    setDeleting(true);
+  }
+
+  if (isAdmin) {
+    return (
+      <>
+        <h1>Deletion form</h1>
+        <p>Delete another account here</p>
+        <form method='post' key={formKey}>
+          <label>id</label>
+          <br />
+          <input type="text" id="id" onChange={e => {
+            setUser(prev => {
+              return { ...prev, id: e.target.value }
+            })
+          }}></input>
+          <br />
+          <button onClick={e => submitButtonClicked(e)} disabled={getting} >Delete</button>
+          <br />
+          <button onClick={e => gobackButtonClicked(e)} disabled={getting} >Go Back</button>
+          <br />
+          <p style={{ color: "red" }}>{deletingError}</p>
+        </form>
+        {confirmeduser.email &&
+          <div style={{ "position": "fixed" }}>
+            <h2>Do you really want to delete ?</h2>
+            <br />
+            <UserBox user={confirmeduser}></UserBox>
+            <br />
+            <button onClick={e => cancelButtonClicked(e)} disabled={deleting} >Cancel</button>
+            <br />
+            <button style={{ "background": "red" }} onClick={e => confirmButtonClicked(e)} disabled={deleting} >Confirm</button>
+          </div>
+        }
+      </>
+    );
+  } else {
+    return (
+      <>
+        <h1>Deletion form</h1>
+        <p>You need administrator permission to access this form</p>
+        <button onClick={e => gobackButtonClicked(e)}>Go Back</button>
+      </>
+    );
+  }
 }
 
 function AuthForm({ modToken, modUser }) {
@@ -217,6 +373,22 @@ function UserDropMenu({ user, logOut }) {
   )
 }
 
+function UserBox({ user }) {
+  return (
+    <>
+      <div style={{ background: "#ff3d3d0e", margin: "8px" }}>
+        <strong>Username: </strong> {user.username}
+        <br />
+        <strong>Email: </strong> {user.email}
+        <br />
+        <strong>ID: </strong> {user.id}
+        <br />
+        <strong>Is admin: </strong> {String(user.isadmin)}
+      </div>
+    </>
+  )
+}
+
 function App() {
   const [token, setToken] = useState(localStorage.getItem('jwt-token'));
   const [user, setUser] = useState({
@@ -307,7 +479,7 @@ function App() {
     } else if (deleting) {
       return (
         <>
-          <DeletionForm />
+          <DeletionForm modEnable={setDeleting} token={token} isAdmin={user.isadmin} />
         </>
       )
     } else {

@@ -174,10 +174,16 @@ app.get("/profils/:id", authentification, I_am_me, async (req, res, next) => {
 
     try {
         const doc = await getUser(targetId);
-        res.status(200).json({
-            return: 322500,
-            user: doc
-        })
+        if (doc === null) {
+            res.status(400).json({
+                return: 322508,
+            })
+        } else {
+            res.status(200).json({
+                return: 322500,
+                user: doc
+            })
+        }
     } catch (err) {
         res.status(500).json({
             return: 322501

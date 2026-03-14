@@ -12,8 +12,6 @@ module.exports = async (req, res, next) => {
     try {
         const userId = req.auth.userId;
         const targetId = req.params.id;
-        console.log(userId);
-        console.log(targetId);
         if (!userId || !targetId || (userId !== targetId && !(await isAdmin(userId)))) {
             throw Error("You are not you");
         }
