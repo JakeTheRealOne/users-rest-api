@@ -131,6 +131,8 @@ function DeletionForm({ modEnable, token, isAdmin }) {
   const [deleting, setDeleting] = useState(false);
   const [deletingError, setDeletingError] = useState("");
   const [formKey, setFormKey] = useState(0);
+  const [now, setNow] = useState(Date.now());
+  const HOLD_DELAY = 2000; // 2sec
 
   useEffect(() => {
     if (getting) {
@@ -212,6 +214,13 @@ function DeletionForm({ modEnable, token, isAdmin }) {
     }
   }, [getting, deleting]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(Date.now());
+    }, 10);
+    return () => clearInterval(interval);
+  }, []);
+
   function submitButtonClicked(e) {
     if (!getting) {
       setGetting(true);
@@ -232,10 +241,18 @@ function DeletionForm({ modEnable, token, isAdmin }) {
     });
   }
 
-  function confirmButtonClicked(e) {
-    setDeleting(true);
+  // source: https://stackoverflow.com/questions/68617984/long-press-button-in-react
+  const [startpress, setStartpress] = useState(null);
+  function deleteMouseDown() {
+    setStartpress(Date.now());
   }
-
+  function deleteMouseUp() {
+    if (startpress && Date.now() - startpress > HOLD_DELAY) {
+      setDeleting(true);
+    }
+    setStartpress(null);
+  }
+  const elapsed = startpress ? now - startpress : 0;
   if (isAdmin) {
     return (
       <>
@@ -264,7 +281,7 @@ function DeletionForm({ modEnable, token, isAdmin }) {
             <br />
             <button onClick={e => cancelButtonClicked(e)} disabled={deleting} >Cancel</button>
             <br />
-            <button style={{ "background": "red" }} onClick={e => confirmButtonClicked(e)} disabled={deleting} >Confirm</button>
+            <button style={{ "background": `linear-gradient(to right, red ${elapsed/HOLD_DELAY*100}%, blue ${elapsed/HOLD_DELAY*100}%)` }} onMouseDown={deleteMouseDown} onMouseUp={deleteMouseUp} disabled={deleting} >Confirm</button>
           </div>
         }
       </>
