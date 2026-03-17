@@ -132,7 +132,7 @@ function DeletionForm({ modEnable, token, isAdmin }) {
   const [deletingError, setDeletingError] = useState("");
   const [formKey, setFormKey] = useState(0);
   const [now, setNow] = useState(Date.now());
-  const HOLD_DELAY = 2000; // 2sec
+  const HOLD_DELAY = 1000; // 1sec
 
   useEffect(() => {
     if (getting) {
@@ -150,7 +150,6 @@ function DeletionForm({ modEnable, token, isAdmin }) {
         })
           .then((response) => response.json())
           .then((response) => {
-            console.log("get: " + JSON.stringify(response));
             if (response.return === 322500) {
               setConfirmeduser({
                 "username": response.user.username,
@@ -158,7 +157,6 @@ function DeletionForm({ modEnable, token, isAdmin }) {
                 "id": response.user._id,
                 "isadmin": response.user.isadmin
               })
-              console.log("got: " + JSON.stringify(response.user));
             } else {
               setDeletingError("Failed " + response.return);
             }
@@ -171,6 +169,7 @@ function DeletionForm({ modEnable, token, isAdmin }) {
           });
       } else {
         setDeletingError("No id given");
+        setGetting(false);
       }
     }
 
@@ -281,7 +280,7 @@ function DeletionForm({ modEnable, token, isAdmin }) {
             <br />
             <button onClick={e => cancelButtonClicked(e)} disabled={deleting} >Cancel</button>
             <br />
-            <button style={{ "background": `linear-gradient(to right, red ${elapsed/HOLD_DELAY*100}%, blue ${elapsed/HOLD_DELAY*100}%)` }} onMouseDown={deleteMouseDown} onMouseUp={deleteMouseUp} disabled={deleting} >Confirm</button>
+            <button style={{ "background": `linear-gradient(to right, red ${elapsed / HOLD_DELAY * 100}%, blue ${elapsed / HOLD_DELAY * 100}%)` }} onMouseDown={deleteMouseDown} onMouseUp={deleteMouseUp} disabled={deleting} >Confirm</button>
           </div>
         }
       </>
@@ -406,6 +405,96 @@ function UserBox({ user }) {
   )
 }
 
+function UserEntry({ user }) {
+  const [copyLabel, setCopyLabel] = useState("copy id");
+
+  async function copyId() {
+    await navigator.clipboard.writeText(user._id).then(() => {
+      setCopyLabel("copied");
+    });
+  }
+
+  return (
+    <>
+      <div style={{ margin: "8px", background: "rgba(255, 255, 255, 0.1)" }}>
+        <strong>{user.username}</strong> {user.email}
+        <br />
+        {user._id} <button onClick={copyId}>{copyLabel}</button> {user.isadmin ? "Admin" : "User"}
+      </div>
+    </>
+  )
+}
+
+function ShowAllMenu({ token, isAdmin }) {
+  const [loading, setLoading] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [usersError, setUsersError] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    if (!isAdmin) {
+      setUsers([]);
+      setLoaded(false);
+    }
+
+    if (loading) {
+      setUsersError("");
+      if (isAdmin) {
+        fetch("http://localhost:3225/profils", {
+          method: "GET",
+          headers: {
+            'Authorization': token
+          }
+        })
+          .then((response) => response.json())
+          .then((response) => {
+            if (response.return === 322500) {
+              setUsers(response.users);
+            } else {
+              setUsersError("Failed " + response.return);
+            }
+          })
+          .catch(e =>
+            console.log("Error: " + e)
+          )
+          .then(() => {
+            setLoading(false);
+          })
+      } else {
+        setUsersError("you are not an admin")
+        setLoading(false);
+      }
+    }
+  }, [loading, isAdmin]);
+
+  function loadAllUsers() {
+    setLoading(true);
+
+  }
+
+  return (
+    <>
+      <div id="asking_overlay">
+        <button onClick={loadAllUsers} disabled={loading} >List all users</button>
+        <br />
+        <small>admin permission needed</small>
+        <br />
+        <small style={{ "color": "red" }}>{usersError}</small>
+      </div>
+      <div id="users_table">
+        <input type="text" placeholder='Search by id' onChange={(e) => {
+          setSearchTerm(e.target.value);
+        }}></input>
+        {users.map((user, index) => user._id.startsWith(searchTerm) && (
+          <UserEntry key={user._id} user = { user }/>
+        )
+        )}
+      </div>
+    </>
+  )
+}
+
 function App() {
   const [token, setToken] = useState(localStorage.getItem('jwt-token'));
   const [user, setUser] = useState({
@@ -507,6 +596,7 @@ function App() {
           <UserDropMenu user={user} logOut={logOut} />
           <button onClick={gotoCreationForm} >Create user</button>
           <button onClick={gotoDeletionForm} >Delete user</button>
+          <ShowAllMenu token={token} isAdmin={user.isadmin} />
         </>
       )
     }
