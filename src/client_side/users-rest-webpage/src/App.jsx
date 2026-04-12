@@ -4,6 +4,22 @@ import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import './App.css'
 
+function getErrorMessage(code) {
+  return (
+    (code === 322501) ? "Server error" :
+      (code === 322502) ? "Database error" :
+        (code === 322503) ? "Authorization missing" :
+          (code === 322504) ? "Invalid request" :
+            (code === 322505) ? "Invalid password" :
+              (code === 322506) ? "Email address already registered" :
+                (code === 322507) ? "Unknown email address" :
+                  (code === 322508) ? "Unknown user id" :
+                    (code === 322509) ? "Invalid password length" :
+                      (code === 322510) ? "Expired web token" :
+                        (code === 322510) ? "Edition permission missing" :
+                          "Failed"
+  )
+}
 
 function CreationForm({ token, modEnable }) {
   const [user, setUser] = useState({
@@ -13,46 +29,111 @@ function CreationForm({ token, modEnable }) {
     "isadmin": false,
   });
   const [creating, setCreating] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [creatingError, setCreatingError] = useState("");
+  const [creatingErrorVisible, setCreatingErrorVisible] = useState("");
   const [formKey, setFormKey] = useState(0);
   const [pwTooltip, setPwTooltip] = useState(false);
+  const [pwLength, setPWLength] = useState(15);
+  const [rgp, setRgp] = useState(false)
 
   useEffect(() => {
-    if (creating) {
-      // Send login request
-      setCreatingError("");
-
-      fetch("http://localhost:3225/profils", {
-        method: "POST",
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'Authorization': token
-        },
-        body: JSON.stringify(user)
-      })
-        .then((response) => response.json())
-        .then((response) => {
-          if (response.return === 322500) {
-            setUser({
-              "email": "",
-              "username": "",
-              "password": "",
-              "isadmin": false,
-            });
-            setFormKey(formKey + 1); // Clear the form
-          } else {
-            setCreatingError("Failed " + response.return);
+    if (generating) {
+      setCreatingErrorVisible(false);
+      setTimeout(() => {
+        console.log("pw: " + pwLength);
+        fetch("http://localhost:3225/motdepasse/" + pwLength, {
+          method: "GET",
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
           }
         })
-        .catch((err) => {
-          console.log("Error: " + err);
-        })
-        .then(() => {
-          setCreating(false);
-        });
+          .then((response) => response.json())
+          .then((response) => {
+            if (response.return === 322500) {
+              setUser(prev => ({ ...prev, "password": response.password }));
+              setRgp(true);
+              setPwTooltip(false);
+            } else {
+              changeErrorCode(response.return);
+            }
+          })
+          .catch((err) => {
+            console.log("Error: " + err);
+            if (err.message.includes("NetworkError")) {
+              changeError("Network error");
+            } else {
+              changeError("Error");
+            }
+          })
+          .then(() => {
+            setGenerating(false);
+          })
+      }, 500);
     }
-  }, [creating]);
+
+    if (creating) {
+      // Send login request
+      setCreatingErrorVisible(false);
+      // setCreatingError("");
+      setTimeout(() =>
+        fetch("http://localhost:3225/profils", {
+          method: "POST",
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': token
+          },
+          body: JSON.stringify(user)
+        })
+          .then((response) => response.json())
+          .then((response) => {
+            if (response.return === 322500) {
+              setUser({
+                "email": "",
+                "username": "",
+                "password": "",
+                "isadmin": false,
+              });
+              setFormKey(formKey + 1); // Clear the form
+            } else {
+              changeErrorCode(response.return);
+            }
+          })
+          .catch((err) => {
+            console.log("Error: " + err);
+            if (err.message.includes("NetworkError")) {
+              changeError("Network error");
+            } else {
+              changeError("Error");
+            }
+          })
+          .then(() => {
+            setCreating(false);
+          }), 500);
+    }
+  }, [creating, generating]);
+
+  function changeError(new_error) {
+    setCreatingErrorVisible(false);
+
+    setTimeout(() => {
+      setCreatingError(new_error)
+      setCreatingErrorVisible(true);
+    }, 150);
+  };
+
+  function changeErrorCode(new_error_code) {
+    const errorTxt = getErrorMessage(new_error_code)
+
+    setCreatingErrorVisible(false);
+
+    setTimeout(() => {
+      setCreatingError(errorTxt)
+      setCreatingErrorVisible(true);
+    }, 150);
+  };
 
   function submitButtonClicked(e) {
     if (!creating) {
@@ -61,58 +142,118 @@ function CreationForm({ token, modEnable }) {
     e.preventDefault();
   }
 
+  function showRandomTooltip(e) {
+    setPwTooltip(!pwTooltip)
+    e.preventDefault();
+  }
+
   function gobackButtonClicked(e) {
     modEnable(false);
   }
 
-  function diceButtonClicked(e) {
-    setPwTooltip(true);
+  function generateButtonClicked(e) {
+    console.log("generating");
+    setGenerating(true);
+    e.preventDefault();
   }
 
   return (
     <>
-      <h1>Creation page</h1>
-      <p>Create another account here</p>
-      <form method='post' key={formKey}>
-        <label>username</label>
-        <br />
-        <input type="text" id="username" onChange={e => {
-          setUser(prev => {
-            return { ...prev, username: e.target.value }
-          })
-        }}></input>
-        <br />
-        <label>email</label>
-        <br />
-        <input type="text" id="email" onChange={e => {
-          setUser(prev => {
-            return { ...prev, email: e.target.value }
-          })
-        }}></input>
-        <br />
-        <label>password</label>
-        <br />
-        <input type="password" id="password" onChange={e => {
-          setUser(prev => {
-            return { ...prev, password: e.target.value }
-          })
-        }}></input>
-        <button onClick={e => submitButtonClicked(e)} disabled={creating} >Dice</button>
-        <br />
-        <label>administrator permissions</label>
-        <br />
-        <input type="checkbox" id="isadmin" onChange={e => {
-          setUser(prev => {
-            return { ...prev, isadmin: e.target.value === "on" }
-          })
-        }}></input>
-        <br />
-        <button onClick={e => submitButtonClicked(e)} disabled={creating} >Create</button>
-        <br />
-        <button onClick={e => gobackButtonClicked(e)} disabled={creating} >Go Back</button>
-        <br />
-        <p style={{ color: "red" }}>{creatingError}</p>
-      </form>
+      <div className="login_page">
+        <div className="big_main_title">
+          <svg className="big_main_icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>account-box</title><path width={24} height={24} fill="#dadada" d="M6,17C6,15 10,13.9 12,13.9C14,13.9 18,15 18,17V18H6M15,9A3,3 0 0,1 12,12A3,3 0 0,1 9,9A3,3 0 0,1 12,6A3,3 0 0,1 15,9M3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3H5C3.89,3 3,3.9 3,5Z" /></svg>
+          <div className="big_main_dual">
+            <h1>
+              users-rest-api
+            </h1>
+            <h3 className="big_main_subtitle">
+              IFT3225 Projet 2
+            </h3>
+          </div>
+        </div>
+
+        <form className="creation_box" method='post' key={formKey}>
+          <div className="login_titleparagraph">
+            <h2 className="login_title">User creation form</h2>
+            {/* <span className="login_paragraph">Create a user with this form</span> */}
+          </div>
+          <div className="login_labelandinput">
+            <label className="login_label">username</label>
+            <input className="creation_input" placeholder="craig" type="text" id="username" onChange={e => {
+              setUser(prev => {
+                return { ...prev, username: e.target.value }
+              })
+            }}></input>
+          </div>
+          <div className="login_labelandinput">
+            <label className="login_label">email</label>
+            <input className="creation_input" placeholder="craig@example.com" type="text" id="email" onChange={e => {
+              setUser(prev => {
+                return { ...prev, email: e.target.value }
+              })
+            }}></input>
+          </div>
+          <div className="login_labelandinput">
+            <label className="login_label">password</label>
+            <div className="creation_pw_input">
+              <input className="inner_pw_input" value={user.password} placeholder="a strong one" type={rgp ? "text" : "password"} id="password" onChange={e => {
+                setRgp(false);
+                setUser(prev => {
+                  return { ...prev, password: e.target.value }
+                })
+              }}></input>
+              <div className="wrapper">
+                {pwTooltip && (
+                  <div className="tooltip">
+                    <label className="pw_title">random password</label>
+                    <div className="pw_range_box">
+                      <input
+                        type="range"
+                        min="1" max="60"
+                        value={pwLength}
+                        onChange={(e) => setPWLength(e.target.value)}
+                      />
+                      <label className="pw_value">{pwLength}</label>
+                    </div>
+                    <button className="gen_button" onClick={e => {
+                      generateButtonClicked(e)
+                    }} disabled={creating || generating}>{generating ? <span className="spinner" /> : "Generate"}</button>
+
+                    {/* caret */}
+                    <div className="tooltip-arrow-outline" />
+                    <div className="tooltip-arrow" />
+                  </div>
+                )}
+
+                {/* Target div */}
+                <button className="dice_btn" onClick={e => showRandomTooltip(e)} >
+                  <svg className="dice_svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M141.4 2.3C103-8 63.5 14.8 53.3 53.2L2.5 242.7C-7.8 281.1 15 320.6 53.4 330.9l189.5 50.8c38.4 10.3 77.9-12.5 88.2-50.9l50.8-189.5c10.3-38.4-12.5-77.9-50.9-88.2L141.4 2.3zm23 205.7a32 32 0 1 1 55.4-32 32 32 0 1 1 -55.4 32zM79.2 220.3a32 32 0 1 1 32 55.4 32 32 0 1 1 -32-55.4zm185 96.4a32 32 0 1 1 -32-55.4 32 32 0 1 1 32 55.4zm9-208.4a32 32 0 1 1 32 55.4 32 32 0 1 1 -32-55.4zm-121 14.4a32 32 0 1 1 -32-55.4 32 32 0 1 1 32 55.4zM418 192L377.4 343.2c-17.2 64-83 102-147 84.9l-38.3-10.3 0 30.2c0 35.3 28.7 64 64 64l192 0c35.3 0 64-28.7 64-64l0-192c0-35.3-28.7-64-64-64L418 192z" /></svg>
+                </button>
+              </div>
+              {/* <button className="dice_btn" onClick={e => showRandomTooltip(e)} >
+                <svg className="dice_svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M141.4 2.3C103-8 63.5 14.8 53.3 53.2L2.5 242.7C-7.8 281.1 15 320.6 53.4 330.9l189.5 50.8c38.4 10.3 77.9-12.5 88.2-50.9l50.8-189.5c10.3-38.4-12.5-77.9-50.9-88.2L141.4 2.3zm23 205.7a32 32 0 1 1 55.4-32 32 32 0 1 1 -55.4 32zM79.2 220.3a32 32 0 1 1 32 55.4 32 32 0 1 1 -32-55.4zm185 96.4a32 32 0 1 1 -32-55.4 32 32 0 1 1 32 55.4zm9-208.4a32 32 0 1 1 32 55.4 32 32 0 1 1 -32-55.4zm-121 14.4a32 32 0 1 1 -32-55.4 32 32 0 1 1 32 55.4zM418 192L377.4 343.2c-17.2 64-83 102-147 84.9l-38.3-10.3 0 30.2c0 35.3 28.7 64 64 64l192 0c35.3 0 64-28.7 64-64l0-192c0-35.3-28.7-64-64-64L418 192z" /></svg>
+              </button> */}
+            </div>
+          </div>
+          <div className="admincheck_box">
+            <label className="login_label">administrator</label>
+
+            <label className="admin_switch">
+              <input className="admin_checkbox" type="checkbox" id="isadmin" onChange={e => {
+                setUser(prev => {
+                  return { ...prev, isadmin: e.target.value === "on" }
+                })
+              }}></input>
+              <span className="slider round"></span>
+            </label>
+
+
+          </div>
+          <button className="login_button" onClick={e => submitButtonClicked(e)} disabled={creating || generating} >{creating ? <span className="spinner" /> : "Create"}</button>
+          <button className="cancel_button" onClick={e => gobackButtonClicked(e)} disabled={creating || generating} >Cancel</button>
+          <p className={`login_failed_p ${creatingErrorVisible ? "" : "fade_out"}`}>{creatingError}</p>
+        </form>
+      </div>
     </>
   )
 }
@@ -311,7 +452,7 @@ function AuthForm({ modToken, modUser, modCreating }) {
       // Send login request
       setAuthErrorVisible(false);
 
-      const timeout = setTimeout(() => {
+      setTimeout(() => {
         if (candidate.email.length === 0) {
           changeError("Please provide an email address");
           setLogin(false);
@@ -341,7 +482,11 @@ function AuthForm({ modToken, modUser, modCreating }) {
             })
             .catch((err) => {
               console.log("Error: " + err);
-
+              if (err.message.includes("NetworkError")) {
+                changeError("Network error");
+              } else {
+                changeError("Error");
+              }
               return
             })
             .then(() => {
@@ -362,20 +507,7 @@ function AuthForm({ modToken, modUser, modCreating }) {
   };
 
   function changeErrorCode(new_error_code) {
-    const errorTxt = (
-      (new_error_code === 322501) ? "Server error" :
-        (new_error_code === 322502) ? "Database error" :
-          (new_error_code === 322503) ? "Authorization missing" :
-            (new_error_code === 322504) ? "Invalid request" :
-              (new_error_code === 322505) ? "Invalid password" :
-                (new_error_code === 322506) ? "Email address already registered" :
-                  (new_error_code === 322507) ? "Unknown email address" :
-                    (new_error_code === 322508) ? "Unknown user id" :
-                      (new_error_code === 322509) ? "Invalid password length" :
-                        (new_error_code === 322510) ? "Expired web token" :
-                          (new_error_code === 322510) ? "Edition permission missing" :
-                            "Failed"
-    )
+    const errorTxt = getErrorMessage(new_error_code)
 
     setAuthErrorVisible(false);
 

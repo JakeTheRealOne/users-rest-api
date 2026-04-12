@@ -164,3 +164,346 @@ h1 {
     border-color: #9f9f9f;
     outline: none;
 }
+
+.creation_box {
+    background-color: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 48px;
+    border-radius: 16px;
+    border: none;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+
+}
+
+.creation_input {
+    border: #404040 solid 1px;
+    border-radius: 6px;
+    background-color: #1a1a1a;
+    color: #9f9f9f;
+    padding: 12px;
+    font-size: 18px;
+}
+
+.creation_pw_input {
+    border: #404040 solid 1px;
+    border-radius: 6px;
+    background-color: #1a1a1a;
+    color: #9f9f9f;
+    padding: 0px;
+    font-size: 18px;
+
+    display: flex;
+    align-items: center;
+}
+
+.inner_pw_input {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    border: none;
+    background-color: transparent;
+    color: #9f9f9f;
+    padding: 12px;
+    font-size: 18px;
+}
+
+.dice_btn {
+    background-color: transparent;
+    color: #9f9f9f;
+    border: none;
+    height: 100%;
+    aspect-ratio: 1;
+    margin-right: 8px;
+}
+
+.dice_svg {
+    width: 20px;
+    height: 20px;
+}
+
+.dice_svg path {
+    width: 20px;
+    height: 20px;
+    fill: #dadada;
+}
+
+.strong_label {
+    color: #dadada;
+    font-size: 18px;
+}
+
+@media (max-width: 1000px) {
+    .creation_box {
+        width: 100%;
+    }
+}
+
+@media (min-width: 1000px) {
+    .creation_box {
+        width: 33%;
+    }
+}
+
+.cancel_button {
+    border: #2f2f2f solid 1px;
+    border-radius: 6px;
+    background-color: #0f0f0f;
+    color: #7e7e7e;
+    padding: 12px;
+    font-size: 18px;
+    opacity: 1;
+    /* transition: opacity 0.3s ease; */
+}
+
+.cancel_button:disabled {
+    opacity: 0.5;
+}
+
+.admincheck_box {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+
+/* Source: https://www.w3schools.com/howto/howto_css_switch.asp */
+/* The switch - the box around the slider */
+.admin_switch {
+    position: relative;
+    display: inline-block;
+    width: 34px;
+    height: 21px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* The slider */
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #1a1a1a;
+    border: #404040 solid 1px;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 12px;
+    width: 12px;
+    left: 4px;
+    bottom: 4px;
+    background-color: #9f9f9f;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+input:checked+.slider {
+    background-color: #00210f;
+    border-color: #004f3e;
+}
+
+input:checked+.slider:before {
+    background-color: #82a89f;
+}
+
+
+input:focus+.slider {
+    /* box-shadow: 0 0 1px #b197fc; */
+}
+
+input:checked+.slider:before {
+    -webkit-transform: translateX(12px);
+    -ms-transform: translateX(12px);
+    transform: translateX(12px);
+}
+
+/* Rounded sliders */
+.slider.round {
+    border-radius: 4px;
+}
+
+.slider.round:before {
+    border-radius: 2px;
+}
+
+/* ***** */
+.wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+/* Tooltip box */
+.tooltip {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    /* space above div */
+    left: 50%;
+    transform: translateX(-50%);
+
+    border: #2f2f2f solid 1px;
+    background-color: #0f0f0f;
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    width: 200px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    z-index: 100;
+
+    margin-bottom: 8px;
+}
+
+.tooltip-arrow {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+
+    width: 0;
+    height: 0;
+
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid #0f0f0f;
+}
+
+.tooltip-arrow-outline {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+
+    width: 0;
+    height: 0;
+
+    border-left: 9px solid transparent;
+    border-right: 9px solid transparent;
+    border-top: 9px solid #2f2f2f;
+}
+
+input[type="range"] {
+    margin: 0;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+    background: #1a1a1a;
+    height: 0.5rem;
+    border-radius: 100%;
+    border: #404040 1px solid;
+}
+
+input[type="range"]::-moz-range-track {
+    background: #1a1a1a;
+    height: 0.5rem;
+    border-radius: 0.5rem;
+    border: #404040 1px solid;
+}
+
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+input[type="range"]:focus {
+    outline: none;
+}
+
+.pw_range_box {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    margin-top: -8px;
+    background-color: #1e1e1e;
+    height: 1rem;
+    width: 1rem;
+    border-radius: 50%;
+    border: #404040 1px solid;
+}
+
+input[type="range"]::-moz-range-thumb {
+    border: none;
+    background-color: #1a1a1a;
+    height: 1rem;
+    width: 1rem;
+    border-radius: 50%;
+    border: #404040 1px solid;
+}
+
+.pw_title {
+    width: 100%;
+    text-align: left;
+    font-size: 16px;
+    color: #9f9f9f;
+}
+
+.pw_gen_btn {
+    background-color: #000;
+    color: #9f9f9f;
+    border: none;
+    font-size: 16px;
+    border-radius: 4px;
+    padding: 4px;
+}
+
+.pw_value {
+    color: #dadada;
+    font-size: 12px;
+}
+
+.creation_input:focus {
+    border-color: #9f9f9f;
+    outline: none;
+}
+
+.creation_pw_input:focus-within {
+    border-color: #9f9f9f;
+    outline: none;
+}
+
+.inner_pw_input:focus {
+    border-color: #9f9f9f;
+    outline: none;
+}
+
+.gen_button {
+    border: #363284 solid 1px;
+    border-radius: 6px;
+    background-color: #0b1a32;
+    color: #979dbb;
+    padding: 8px;
+    font-size: 18px;
+}
+
+.gen_button:disabled {
+    color: #979dbb2c;
+}
