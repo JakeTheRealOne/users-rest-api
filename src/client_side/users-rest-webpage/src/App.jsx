@@ -4,6 +4,7 @@ import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import './App.css'
 
+
 function CreationForm({ token, modEnable }) {
   const [user, setUser] = useState({
     "email": "",
@@ -296,49 +297,93 @@ function DeletionForm({ modEnable, token, isAdmin }) {
   }
 }
 
-function AuthForm({ modToken, modUser }) {
+function AuthForm({ modToken, modUser, modCreating }) {
   const [candidate, setCandidate] = useState({
     "email": "",
     "password": ""
   });
   const [login, setLogin] = useState(false);
   const [authError, setAuthError] = useState("");
+  const [authErrorVisible, setAuthErrorVisible] = useState(false);
 
   useEffect(() => {
     if (login) {
       // Send login request
-      setAuthError("");
+      setAuthErrorVisible(false);
 
-      fetch("http://localhost:3225/connexion", {
-        method: "POST",
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(candidate)
-      })
-        .then((response) => response.json())
-        .then((response) => {
-          if (response.return === 322500) {
-            localStorage.setItem('jwt-token', response.token);
-            modToken(localStorage.getItem('jwt-token'));
-            modUser({ email: "", username: "", id: response.id });
-          } else {
-            setAuthError("Failed " + response.return);
-          }
-
-          return
-        })
-        .catch((err) => {
-          console.log("Error: " + err);
-
-          return
-        })
-        .then(() => {
+      const timeout = setTimeout(() => {
+        if (candidate.email.length === 0) {
+          changeError("Please provide an email address");
           setLogin(false);
-        });
+        } else if (candidate.password.length === 0) {
+          changeError("Please provide a password");
+          setLogin(false);
+        } else {
+          fetch("http://localhost:3225/connexion", {
+            method: "POST",
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(candidate)
+          })
+            .then((response) => response.json())
+            .then((response) => {
+              if (response.return === 322500) {
+                localStorage.setItem('jwt-token', response.token);
+                modToken(localStorage.getItem('jwt-token'));
+                modUser({ email: "", username: "", id: response.id });
+              } else {
+                changeErrorCode(response.return);
+              }
+
+              return
+            })
+            .catch((err) => {
+              console.log("Error: " + err);
+
+              return
+            })
+            .then(() => {
+              setLogin(false);
+            });
+        }
+      }, 500);
     }
   }, [login]);
+
+  function changeError(new_error) {
+    setAuthErrorVisible(false);
+
+    setTimeout(() => {
+      setAuthError(new_error)
+      setAuthErrorVisible(true);
+    }, 150);
+  };
+
+  function changeErrorCode(new_error_code) {
+    const errorTxt = (
+      (new_error_code === 322501) ? "Server error" :
+        (new_error_code === 322502) ? "Database error" :
+          (new_error_code === 322503) ? "Authorization missing" :
+            (new_error_code === 322504) ? "Invalid request" :
+              (new_error_code === 322505) ? "Invalid password" :
+                (new_error_code === 322506) ? "Email address already registered" :
+                  (new_error_code === 322507) ? "Unknown email address" :
+                    (new_error_code === 322508) ? "Unknown user id" :
+                      (new_error_code === 322509) ? "Invalid password length" :
+                        (new_error_code === 322510) ? "Expired web token" :
+                          (new_error_code === 322510) ? "Edition permission missing" :
+                            "Failed"
+    )
+
+    setAuthErrorVisible(false);
+
+    setTimeout(() => {
+      setAuthError(errorTxt)
+      setAuthErrorVisible(true);
+    }, 150);
+  };
 
   function submitButtonClicked(e) {
     if (!login) {
@@ -349,24 +394,43 @@ function AuthForm({ modToken, modUser }) {
 
   return (
     <>
-      <h1>Login page</h1>
-      <p>You need to connect to your user account</p>
-      <form method='post'>
-        <label>email</label>
-        <input type="text" id="email" onChange={e => {
-          setCandidate(prev => {
-            return { ...prev, email: e.target.value }
-          })
-        }}></input>
-        <label>password</label>
-        <input type="password" id="password" onChange={e => {
-          setCandidate(prev => {
-            return { ...prev, password: e.target.value }
-          })
-        }}></input>
-        <button onClick={e => submitButtonClicked(e)} disabled={login} >Connect</button>
-        <p style={{ color: "red" }}>{authError}</p>
-      </form>
+      <div className="login_page">
+        <div className="big_main_title">
+          <svg className="big_main_icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>account-box</title><path width={24} height={24} fill="#dadada" d="M6,17C6,15 10,13.9 12,13.9C14,13.9 18,15 18,17V18H6M15,9A3,3 0 0,1 12,12A3,3 0 0,1 9,9A3,3 0 0,1 12,6A3,3 0 0,1 15,9M3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3H5C3.89,3 3,3.9 3,5Z" /></svg>
+          <div className="big_main_dual">
+            <h1>
+              users-rest-api
+            </h1>
+            <h3 className="big_main_subtitle">
+              IFT3225 Projet 2
+            </h3>
+          </div>
+        </div>
+        <form className="login_box" method='post'>
+          <div className="login_titleparagraph">
+            <h2 className="login_title">Welcome back</h2>
+            <span className="login_paragraph">Don't have an account yet? <a className="login_a_signup" href="#" onClick={() => modCreating(true)}>Sign up</a></span>
+          </div>
+          <div className="login_labelandinput">
+            {/* <label className="login_label">email</label> */}
+            <input placeholder="email address" className="login_input" type="text" id="email" onChange={e => {
+              setCandidate(prev => {
+                return { ...prev, email: e.target.value }
+              })
+            }}></input>
+          </div>
+          <div className="login_labelandinput">
+            {/* <label className="login_label">password</label> */}
+            <input placeholder="password" className="login_input" type="password" id="password" onChange={e => {
+              setCandidate(prev => {
+                return { ...prev, password: e.target.value }
+              })
+            }}></input>
+          </div>
+          <button className="login_button" onClick={e => submitButtonClicked(e)} disabled={login} >{login ? <span className="spinner" /> : "Sign in"}</button>
+          <p className={`login_failed_p ${authErrorVisible ? "" : "fade_out"}`}>{authError}</p>
+        </form>
+      </div>
     </>
   )
 }
@@ -487,7 +551,7 @@ function ShowAllMenu({ token, isAdmin }) {
           setSearchTerm(e.target.value);
         }}></input>
         {users.map((user, index) => user._id.startsWith(searchTerm) && (
-          <UserEntry key={user._id} user = { user }/>
+          <UserEntry key={user._id} user={user} />
         )
         )}
       </div>
@@ -575,14 +639,14 @@ function App() {
     setDeleting(true);
   }
 
-  if (token) {
-    if (creating) {
-      return (
-        <>
-          <CreationForm token={token} modEnable={setCreating} />
-        </>
-      )
-    } else if (deleting) {
+  if (creating) {
+    return (
+      <>
+        <CreationForm token={token} modEnable={setCreating} />
+      </>
+    )
+  } else if (token) {
+    if (deleting) {
       return (
         <>
           <DeletionForm modEnable={setDeleting} token={token} isAdmin={user.isadmin} />
@@ -603,7 +667,7 @@ function App() {
   } else {
     return (
       <>
-        <AuthForm modToken={setToken} modUser={setUser} />
+        <AuthForm modToken={setToken} modUser={setUser} modCreating={setCreating} />
       </>
     )
   }
