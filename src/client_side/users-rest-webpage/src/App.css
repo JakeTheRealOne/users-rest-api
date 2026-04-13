@@ -108,18 +108,21 @@ h1 {
     color: #979dbb6f;
 }
 
-.login_failed_p {
+.green_login_button {
+    border: #004f3e solid 1px;
+    border-radius: 6px;
+    background-color: #00210f;
+    color: #82a89f;
+    padding: 12px;
     font-size: 18px;
-    color: #ce758e;
-    width: 100%;
-    text-align: center;
-    margin: 0;
-    transition: opacity 0.3s ease;
-    opacity: 1;
 }
 
-.fade_out {
-    opacity: 0;
+.green_login_button:disabled {
+    color: #82a89f6f;
+}
+
+.login_failed_p {
+    color: #ce758e;
 }
 
 .spinner {
@@ -127,6 +130,16 @@ h1 {
     height: 11px;
     border: 3px solid transparent;
     border-top: 3px solid #979dbb;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: inline-block;
+}
+
+.green_spinner {
+    width: 11px;
+    height: 11px;
+    border: 3px solid transparent;
+    border-top: 3px solid #82a89f;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
     display: inline-block;
@@ -506,4 +519,30 @@ input[type="range"]::-moz-range-thumb {
 
 .gen_button:disabled {
     color: #979dbb2c;
+}
+
+.creation_title {
+    width: 100%;
+    text-align: center;
+    text-transform: uppercase;
+    color: #dadada;
+    font-size: 24px;
+    margin: 0;
+}
+
+.login_note_p {
+    font-size: 18px;
+    width: 100%;
+    text-align: center;
+    margin: 0;
+    transition: opacity 0.3s ease;
+    opacity: 1;
+}
+
+.fade_out {
+    opacity: 0;
+}
+
+.login_success_p {
+    color: #69b1a0;
 }
