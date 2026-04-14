@@ -12,7 +12,7 @@ function getErrorMessage(code) {
           (code === 322504) ? "Invalid request" :
             (code === 322505) ? "Invalid password" :
               (code === 322506) ? "Email address already registered" :
-                (code === 322507) ? "Unknown email address" :
+                (code === 322507) ? "Invalid email address" :
                   (code === 322508) ? "Unknown user id" :
                     (code === 322509) ? "Invalid password length" :
                       (code === 322510) ? "Expired web token" :
@@ -78,47 +78,62 @@ function CreationForm({ token, modEnable }) {
       // Send login request
       setCreatingErrorVisible(false);
       // setCreatingError("");
-      setTimeout(() =>
-        fetch("http://localhost:3225/profils", {
-          method: "POST",
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': token
-          },
-          body: JSON.stringify(user)
-        })
-          .then((response) => response.json())
-          .then((response) => {
-            if (response.return === 322500) {
-              const registered_email = user.email || "user";
-              setUser({
-                "email": "",
-                "username": "",
-                "password": "",
-                "isadmin": false,
-              });
-              setFormKey(formKey + 1); // Clear the form
-              setErrorType(true);
-              changeError(registered_email + " successfully created");
-            } else {
-              setErrorType(false);
-              changeErrorCode(response.return);
-            }
+      setTimeout(() => {
+        if (!user.email) {
+          setErrorType(false);
+          changeError("Please provide an email address");
+          setCreating(false);
+        } else if (!user.password) {
+          setErrorType(false);
+          changeError("Please provide a password");
+          setCreating(false);
+        } else if (!user.username) {
+          setErrorType(false);
+          changeError("Please provide a username");
+          setCreating(false);
+        } else {
+          fetch("http://localhost:3225/profils", {
+            method: "POST",
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Authorization': token
+            },
+            body: JSON.stringify(user)
           })
-          .catch((err) => {
-            console.log("Error: " + err);
-            if (err.message.includes("NetworkError")) {
-              setErrorType(false);
-              changeError("Network error");
-            } else {
-              setErrorType(false);
-              changeError("Error");
-            }
-          })
-          .then(() => {
-            setCreating(false);
-          }), 500);
+            .then((response) => response.json())
+            .then((response) => {
+              if (response.return === 322500) {
+                const registered_email = user.email || "user";
+                setUser({
+                  "email": "",
+                  "username": "",
+                  "password": "",
+                  "isadmin": false,
+                });
+                setFormKey(formKey + 1); // Clear the form
+                setErrorType(true);
+                changeError(registered_email + " successfully created");
+              } else {
+                setErrorType(false);
+                changeErrorCode(response.return);
+              }
+            })
+            .catch((err) => {
+              console.log("Error: " + err);
+              if (err.message.includes("NetworkError")) {
+                setErrorType(false);
+                changeError("Network error");
+              } else {
+                setErrorType(false);
+                changeError("Error");
+              }
+            })
+            .then(() => {
+              setCreating(false);
+            })
+        }
+      }, 500);
     }
   }, [creating, generating]);
 
@@ -265,13 +280,14 @@ function CreationForm({ token, modEnable }) {
   )
 }
 
-function SignupForm({ token, modEnable }) {
+function SignupForm({ token, modToken, modUser, modEnable }) {
   const [user, setUser] = useState({
     "email": "",
     "username": "",
     "password": "",
     "isadmin": false,
   });
+  const [authing, setAuthing] = useState(false);
   const [creating, setCreating] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [creatingError, setCreatingError] = useState("");
@@ -285,7 +301,6 @@ function SignupForm({ token, modEnable }) {
     if (generating) {
       setCreatingErrorVisible(false);
       setTimeout(() => {
-        console.log("pw: " + pwLength);
         fetch("http://localhost:3225/motdepasse/" + pwLength, {
           method: "GET",
           headers: {
@@ -334,13 +349,37 @@ function SignupForm({ token, modEnable }) {
           .then((response) => response.json())
           .then((response) => {
             if (response.return === 322500) {
-              setUser({
-                "email": "",
-                "username": "",
-                "password": "",
-                "isadmin": false,
-              });
-              setFormKey(formKey + 1); // Clear the form
+              const candidate = {
+                "email": user.email,
+                "password": user.password
+              }
+              return fetch("http://localhost:3225/connexion", {
+                method: "POST",
+                headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(candidate)
+              })
+                .then((response) => response.json())
+                .then((response) => {
+                  if (response.return === 322500) {
+                    localStorage.setItem('jwt-token', response.token);
+                    modToken(localStorage.getItem('jwt-token'));
+                    modUser({ email: "", username: "", id: response.id });
+                    modEnable(false);
+                  } else {
+                    changeErrorCode(response.return);
+                  }
+                })
+                .catch((err) => {
+                  console.log("Error: " + err);
+                  if (err.message.includes("NetworkError")) {
+                    changeError("Network error");
+                  } else {
+                    changeError("Error");
+                  }
+                });
             } else {
               changeErrorCode(response.return);
             }
@@ -515,87 +554,113 @@ function DeletionForm({ modEnable, token, isAdmin }) {
 
   const [getting, setGetting] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [holding, setHolding] = useState(false);
   const [deletingError, setDeletingError] = useState("");
+  const [deletingErrorVisible, setDeletingErrorVisible] = useState(false);
+  const [errortype, setErrorType] = useState(false);
   const [formKey, setFormKey] = useState(0);
   const [now, setNow] = useState(Date.now());
   const HOLD_DELAY = 1000; // 1sec
+  const COMPLISH_DELAY = 50; // 50ms (for completion feeling)
 
   useEffect(() => {
     if (getting) {
       // Get user informations for deletion confirmation
-      setDeletingError("");
-
-      if (user.id) {
-        fetch("http://localhost:3225/profils/" + user.id, {
-          method: "GET",
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': token
-          },
-        })
-          .then((response) => response.json())
-          .then((response) => {
-            if (response.return === 322500) {
-              setConfirmeduser({
-                "username": response.user.username,
-                "email": response.user.email,
-                "id": response.user._id,
-                "isadmin": response.user.isadmin
-              })
-            } else {
-              setDeletingError("Failed " + response.return);
-            }
+      setDeletingErrorVisible(false);
+      setTimeout(() => {
+        if (user.id) {
+          fetch("http://localhost:3225/profils/" + user.id, {
+            method: "GET",
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Authorization': token
+            },
           })
-          .catch((err) => {
-            console.log("Error: " + err);
-          })
-          .then(() => {
-            setGetting(false);
-          });
-      } else {
-        setDeletingError("No id given");
-        setGetting(false);
-      }
+            .then((response) => response.json())
+            .then((response) => {
+              if (response.return === 322500) {
+                setConfirmeduser({
+                  "username": response.user.username,
+                  "email": response.user.email,
+                  "id": response.user._id,
+                  "isadmin": response.user.isadmin
+                })
+              } else {
+                setErrorType(false);
+                changeErrorCode(response.return);
+              }
+            })
+            .catch((err) => {
+              console.log("Error: " + err);
+              setErrorType(false);
+              if (err.message.includes("NetworkError")) {
+                changeError("Network error");
+              } else {
+                changeError("Error");
+              }
+            })
+            .then(() => {
+              setGetting(false);
+            });
+        } else {
+          changeError("Please provide an id");
+          setGetting(false);
+        }
+      }, 500);
     }
 
     if (deleting) {
       // Send deletion request
-      setDeletingError("");
+      setDeletingErrorVisible(false);
 
-      if (confirmeduser.id) {
-        fetch("http://localhost:3225/profils/" + confirmeduser.id, {
-          method: "DELETE",
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': token
-          },
-        })
-          .then((response) => response.json())
-          .then((response) => {
-            if (response.return === 322500) {
-              setUser({
-                "id": ""
+      setTimeout(() => {
+        if (confirmeduser.id) {
+          fetch("http://localhost:3225/profils/" + confirmeduser.id, {
+            method: "DELETE",
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Authorization': token
+            },
+          })
+            .then((response) => response.json())
+            .then((response) => {
+              if (response.return === 322500) {
+                setUser({
+                  "id": ""
+                });
+                setFormKey(formKey + 1); // Clear the form
+                setErrorType(true);
+                changeError("User deleted successfully");
+              } else {
+                setErrorType(false);
+                changeErrorCode(response.return);
+              }
+            })
+            .catch((err) => {
+              console.log("Error: " + err);
+              setErrorType(false);
+              if (err.message.includes("NetworkError")) {
+                changeError("Network error");
+              } else {
+                changeError("Error");
+              }
+            })
+            .then(() => {
+              setDeleting(false);
+              setConfirmeduser({
+                "id": "",
+                "email": "",
+                "username": "",
+                "isadmin": false
               });
-              setFormKey(formKey + 1); // Clear the form
-            } else {
-              setDeletingError("Failed " + response.return);
-            }
-          })
-          .catch((err) => {
-            console.log("Error: " + err);
-          })
-          .then(() => {
-            setDeleting(false);
-            setConfirmeduser({
-              "id": "",
-              "email": "",
-              "username": "",
-              "isadmin": false
             });
-          });
-      }
+        } else {
+          changeError("Please provide an id");
+          setGetting(false);
+        }
+      }, 500);
     }
   }, [getting, deleting]);
 
@@ -613,11 +678,34 @@ function DeletionForm({ modEnable, token, isAdmin }) {
     e.preventDefault();
   }
 
+  function changeError(new_error) {
+    setDeletingErrorVisible(false);
+
+    setTimeout(() => {
+      setDeletingError(new_error)
+      setDeletingErrorVisible(true);
+    }, 150);
+  };
+
+  function changeErrorCode(new_error_code) {
+    const errorTxt = getErrorMessage(new_error_code)
+
+    setDeletingErrorVisible(false);
+
+    setTimeout(() => {
+      setDeletingError(errorTxt)
+      setDeletingErrorVisible(true);
+    }, 150);
+  };
+
   function gobackButtonClicked(e) {
     modEnable(false);
   }
 
   function cancelButtonClicked(e) {
+    setHolding(false);
+    setDeleting(false);
+    setGetting(false);
     setConfirmeduser({
       "id": "",
       "email": "",
@@ -630,9 +718,11 @@ function DeletionForm({ modEnable, token, isAdmin }) {
   const [startpress, setStartpress] = useState(null);
   function deleteMouseDown() {
     setStartpress(Date.now());
+    setHolding(true);
   }
   function deleteMouseUp() {
-    if (startpress && Date.now() - startpress > HOLD_DELAY) {
+    setHolding(false);
+    if (startpress && Date.now() - startpress > (HOLD_DELAY + COMPLISH_DELAY)) {
       setDeleting(true);
     }
     setStartpress(null);
@@ -641,34 +731,46 @@ function DeletionForm({ modEnable, token, isAdmin }) {
   if (isAdmin) {
     return (
       <>
-        <h1>Deletion form</h1>
-        <p>Delete another account here</p>
-        <form method='post' key={formKey}>
-          <label>id</label>
-          <br />
-          <input type="text" id="id" onChange={e => {
-            setUser(prev => {
-              return { ...prev, id: e.target.value }
-            })
-          }}></input>
-          <br />
-          <button onClick={e => submitButtonClicked(e)} disabled={getting} >Delete</button>
-          <br />
-          <button onClick={e => gobackButtonClicked(e)} disabled={getting} >Go Back</button>
-          <br />
-          <p style={{ color: "red" }}>{deletingError}</p>
-        </form>
-        {confirmeduser.email &&
-          <div style={{ "position": "fixed" }}>
-            <h2>Do you really want to delete ?</h2>
-            <br />
-            <UserBox user={confirmeduser}></UserBox>
-            <br />
-            <button onClick={e => cancelButtonClicked(e)} disabled={deleting} >Cancel</button>
-            <br />
-            <button style={{ "background": `linear-gradient(to right, red ${elapsed / HOLD_DELAY * 100}%, blue ${elapsed / HOLD_DELAY * 100}%)` }} onMouseDown={deleteMouseDown} onMouseUp={deleteMouseUp} disabled={deleting} >Confirm</button>
+        <div className="login_page">
+          <div className="big_main_title">
+            <svg className="big_main_icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>account-box</title><path width={24} height={24} fill="#dadada" d="M6,17C6,15 10,13.9 12,13.9C14,13.9 18,15 18,17V18H6M15,9A3,3 0 0,1 12,12A3,3 0 0,1 9,9A3,3 0 0,1 12,6A3,3 0 0,1 15,9M3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3H5C3.89,3 3,3.9 3,5Z" /></svg>
+            <div className="big_main_dual">
+              <h1>
+                users-rest-api
+              </h1>
+              <h3 className="big_main_subtitle">
+                IFT3225 Projet 2
+              </h3>
+            </div>
           </div>
-        }
+          <form method='post' className="creation_box" key={formKey}>
+            <div className="login_titleparagraph">
+              <h2 className="creation_title">User deletion form</h2>
+              <span className="login_paragraph">This form remove a user from the database.</span>
+            </div>
+            <div className="login_labelandinput">
+              <label className="login_label">id</label>
+              <input className="creation_input" placeholder="69dc1..." type="text" id="id" onChange={e => {
+                setUser(prev => {
+                  return { ...prev, id: e.target.value }
+                })
+              }}></input>
+            </div>
+            <button className="red_login_button" onClick={e => submitButtonClicked(e)} disabled={getting || deleting || holding} >{getting ? <span className="red_spinner" /> : "Delete"}</button>
+            {/* <button onClick={e => gobackButtonClicked(e)} disabled={getting} >Go Back</button> */}
+            <p className={`login_note_p ${errortype ? "login_success_p" : "login_failed_p"} ${deletingErrorVisible ? "" : "fade_out"}`}>{deletingError}</p>
+          </form>
+          {confirmeduser.email &&
+            <div className="confirm_popup_overall">
+              <div className="confirm_popup">
+                <span className="login_paragraph">You are about to delete the user:</span>
+                <UserBox user={confirmeduser}></UserBox>
+                <button className={`red_login_button`} style={{ "background": `linear-gradient(to right, #73133d ${elapsed / HOLD_DELAY * 100}%, #2d0e19 ${elapsed / HOLD_DELAY * 100}%)` }} onMouseDown={deleteMouseDown} onMouseLeave={deleteMouseUp} onMouseUp={deleteMouseUp} disabled={deleting || getting} >{deleting ? <span className="red_spinner" /> : <p className={`${holding ? "trembling" : ""}`}>{holding ? "Hold" : "Confirm"}</p>}</button>
+                <button className="nevermind_button" onClick={e => cancelButtonClicked(e)} disabled={deleting} >Cancel</button>
+              </div>
+            </div>
+          }
+        </div>
       </>
     );
   } else {
@@ -829,17 +931,43 @@ function UserDropMenu({ user, logOut }) {
   )
 }
 
+function UIcon({ admin, big }) {
+  return (
+    <>
+      <div className={`uicon ${admin ? "admin_uicon" : "user_uicon"} ${big ? "big_uicon" : "small_uicon"}`}>
+        {/* {admin ? } */}
+        {admin ?
+          <svg xmlns="http://www.w3.org/2000/svg" strokeWidth={0.5} style={{ "margin": "24px" }} viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /></svg> :
+          <svg xmlns="http://www.w3.org/2000/svg" strokeWidth={0.5} style={{ "margin": "20px" }} viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+        }
+
+      </div>
+    </>
+  )
+}
+
+function UType({ admin }) {
+  return (
+    <>
+      <div className={`utype ${admin ? "admin_utype" : "user_utype"}`}>
+        {admin ? "admin" : "user"}
+      </div>
+    </>
+  )
+}
+
 function UserBox({ user }) {
   return (
     <>
-      <div style={{ background: "#ff3d3d0e", margin: "8px" }}>
-        <strong>Username: </strong> {user.username}
-        <br />
-        <strong>Email: </strong> {user.email}
-        <br />
-        <strong>ID: </strong> {user.id}
-        <br />
-        <strong>Is admin: </strong> {String(user.isadmin)}
+      <div className="user_box">
+        <UIcon admin={user.isadmin} big={true} ></ UIcon>
+        <div className="dual_popup_del">
+          <p className="strong_label">{user.username}</p>
+          <UType admin={user.isadmin}></UType>
+        </div>
+        <p className="weak_label">{user.email}</p>
+        {/* <strong>ID: </strong> {user.id}
+        <strong>Is admin: </strong> {String(user.isadmin)} */}
       </div>
     </>
   )
@@ -1019,7 +1147,7 @@ function App() {
   if (signuping) {
     return (
       <>
-        <SignupForm token={token} modEnable={setSignuping} />
+        <SignupForm token={token} modToken={setToken} modEnable={setSignuping} modUser={setUser} />
       </>
     )
   } else if (token) {
