@@ -30,8 +30,8 @@ function CreationForm({ token, modEnable }) {
   });
   const [creating, setCreating] = useState(false);
   const [generating, setGenerating] = useState(false);
-  const [creatingError, setCreatingError] = useState("");
-  const [creatingErrorVisible, setCreatingErrorVisible] = useState("");
+  const [creatingError, setCreatingError] = useState(" ");
+  const [creatingErrorVisible, setCreatingErrorVisible] = useState(false);
   const [formKey, setFormKey] = useState(0);
   const [pwTooltip, setPwTooltip] = useState(false);
   const [pwLength, setPWLength] = useState(15);
@@ -182,17 +182,6 @@ function CreationForm({ token, modEnable }) {
   return (
     <>
       <div className="login_page">
-        <div className="big_main_title">
-          <svg className="big_main_icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>account-box</title><path width={24} height={24} fill="#dadada" d="M6,17C6,15 10,13.9 12,13.9C14,13.9 18,15 18,17V18H6M15,9A3,3 0 0,1 12,12A3,3 0 0,1 9,9A3,3 0 0,1 12,6A3,3 0 0,1 15,9M3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3H5C3.89,3 3,3.9 3,5Z" /></svg>
-          <div className="big_main_dual">
-            <h1>
-              users-rest-api
-            </h1>
-            <h3 className="big_main_subtitle">
-              IFT3225 Projet 2
-            </h3>
-          </div>
-        </div>
 
         <form className="creation_box" method='post' key={formKey}>
           <div className="login_titleparagraph">
@@ -732,17 +721,6 @@ function DeletionForm({ modEnable, token, isAdmin }) {
     return (
       <>
         <div className="login_page">
-          <div className="big_main_title">
-            <svg className="big_main_icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>account-box</title><path width={24} height={24} fill="#dadada" d="M6,17C6,15 10,13.9 12,13.9C14,13.9 18,15 18,17V18H6M15,9A3,3 0 0,1 12,12A3,3 0 0,1 9,9A3,3 0 0,1 12,6A3,3 0 0,1 15,9M3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3H5C3.89,3 3,3.9 3,5Z" /></svg>
-            <div className="big_main_dual">
-              <h1>
-                users-rest-api
-              </h1>
-              <h3 className="big_main_subtitle">
-                IFT3225 Projet 2
-              </h3>
-            </div>
-          </div>
           <form method='post' className="creation_box" key={formKey}>
             <div className="login_titleparagraph">
               <h2 className="creation_title">User deletion form</h2>
@@ -776,9 +754,17 @@ function DeletionForm({ modEnable, token, isAdmin }) {
   } else {
     return (
       <>
-        <h1>Deletion form</h1>
-        <p>You need administrator permission to access this form</p>
-        <button onClick={e => gobackButtonClicked(e)}>Go Back</button>
+        <div className="login_page">
+          <div className="creation_box">
+            <div className="login_titleparagraph">
+              <h2 className="creation_title">User deletion form</h2>
+              <div className="deletion_admin_dual">
+                <svg className="admin_error_svg" xmlns="http://www.w3.org/2000/svg" strokeWidth={2} style={{ "margin": `4px` }} viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /></svg>
+                <span className="deletion_admin_paragraph">missing admin permission</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </>
     );
   }
@@ -916,16 +902,14 @@ function AuthForm({ modToken, modUser, modCreating }) {
 function UserDropMenu({ user, logOut }) {
   return (
     <>
-      <div style={{ background: "#ffffff0e", margin: "8px" }}>
-        <strong>Username: </strong> {user.username}
-        <br />
+      <div className="user_dropmenu">
+        <UIcon admin={user.isadmin} big={false} />
+        <p className="udm_label">{user.username}</p>
+        {/* <strong>Username: </strong> {user.username}
         <strong>Email: </strong> {user.email}
-        <br />
         <strong>ID: </strong> {user.id}
-        <br />
-        <strong>Is admin: </strong> {String(user.isadmin)}
-        <br />
-        <button onClick={logOut}>Log out</button>
+        <strong>Is admin: </strong> {String(user.isadmin)} */}
+        {/* <button onClick={logOut}>Log out</button> */}
       </div>
     </>
   )
@@ -937,8 +921,8 @@ function UIcon({ admin, big }) {
       <div className={`uicon ${admin ? "admin_uicon" : "user_uicon"} ${big ? "big_uicon" : "small_uicon"}`}>
         {/* {admin ? } */}
         {admin ?
-          <svg xmlns="http://www.w3.org/2000/svg" strokeWidth={0.5} style={{ "margin": "24px" }} viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /></svg> :
-          <svg xmlns="http://www.w3.org/2000/svg" strokeWidth={0.5} style={{ "margin": "20px" }} viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" strokeWidth={0.5} style={{ "margin": `${big ? '24px' : '8px'}` }} viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /></svg> :
+          <svg xmlns="http://www.w3.org/2000/svg" strokeWidth={0.5} style={{ "margin": `${big ? '20px' : '4px'}` }} viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
         }
 
       </div>
@@ -973,8 +957,9 @@ function UserBox({ user }) {
   )
 }
 
-function UserEntry({ user }) {
+function UserEntry({ user, searchLength }) {
   const [copyLabel, setCopyLabel] = useState("copy id");
+  const [copy, setCopy] = useState(false);
 
   async function copyId() {
     await navigator.clipboard.writeText(user._id).then(() => {
@@ -984,10 +969,29 @@ function UserEntry({ user }) {
 
   return (
     <>
-      <div style={{ margin: "8px", background: "rgba(255, 255, 255, 0.1)" }}>
-        <strong>{user.username}</strong> {user.email}
-        <br />
-        {user._id} <button onClick={copyId}>{copyLabel}</button> {user.isadmin ? "Admin" : "User"}
+      <div className="user_entry" onMouseEnter={() => { setCopy(true) }} onMouseLeave={() => { setCopy(false); setCopyLabel("copy id") }}>
+        <UIcon admin={user.isadmin} big={false} />
+        <div className="tripial_entry">
+          <div className="dual_entry">
+            <UType admin={user.isadmin}></UType> <strong>{user.username}</strong> {user.email}
+          </div>
+          <div className="dual_entry">
+            <span className="id_text">
+              <strong>{user._id.slice(0, searchLength)}</strong>
+              {user._id.slice(searchLength)}
+            </span>
+            <button className="copy_button" onClick={copyId}>{copy &&
+              <>
+                {(copyLabel === "copy id") &&
+                  <svg className="copy_svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M192 0c-35.3 0-64 28.7-64 64l0 256c0 35.3 28.7 64 64 64l192 0c35.3 0 64-28.7 64-64l0-200.6c0-17.4-7.1-34.1-19.7-46.2L370.6 17.8C358.7 6.4 342.8 0 326.3 0L192 0zM64 128c-35.3 0-64 28.7-64 64L0 448c0 35.3 28.7 64 64 64l192 0c35.3 0 64-28.7 64-64l0-16-64 0 0 16-192 0 0-256 16 0 0-64-16 0z" /></svg>
+                }
+                {(copyLabel === "copied") &&
+                  <svg className="green_copy_svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M434.8 70.1c14.3 10.4 17.5 30.4 7.1 44.7l-256 352c-5.5 7.6-14 12.3-23.4 13.1s-18.5-2.7-25.1-9.3l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l101.5 101.5 234-321.7c10.4-14.3 30.4-17.5 44.7-7.1z" /></svg>
+                }
+              </>
+            }</button>
+          </div>
+        </div>
       </div>
     </>
   )
@@ -1008,31 +1012,33 @@ function ShowAllMenu({ token, isAdmin }) {
 
     if (loading) {
       setUsersError("");
-      if (isAdmin) {
-        fetch("http://localhost:3225/profils", {
-          method: "GET",
-          headers: {
-            'Authorization': token
-          }
-        })
-          .then((response) => response.json())
-          .then((response) => {
-            if (response.return === 322500) {
-              setUsers(response.users);
-            } else {
-              setUsersError("Failed " + response.return);
+      setTimeout(() => {
+        if (isAdmin) {
+          fetch("http://localhost:3225/profils", {
+            method: "GET",
+            headers: {
+              'Authorization': token
             }
           })
-          .catch(e =>
-            console.log("Error: " + e)
-          )
-          .then(() => {
-            setLoading(false);
-          })
-      } else {
-        setUsersError("you are not an admin")
-        setLoading(false);
-      }
+            .then((response) => response.json())
+            .then((response) => {
+              if (response.return === 322500) {
+                setUsers(response.users);
+              } else {
+                setUsersError("Failed " + response.return);
+              }
+            })
+            .catch(e =>
+              console.log("Error: " + e)
+            )
+            .then(() => {
+              setLoading(false);
+            })
+        } else {
+          setUsersError("You are not an admin")
+          setLoading(false);
+        }
+      }, 500);
     }
   }, [loading, isAdmin]);
 
@@ -1043,21 +1049,227 @@ function ShowAllMenu({ token, isAdmin }) {
 
   return (
     <>
-      <div id="asking_overlay">
-        <button onClick={loadAllUsers} disabled={loading} >List all users</button>
-        <br />
-        <small>admin permission needed</small>
-        <br />
-        <small style={{ "color": "red" }}>{usersError}</small>
+      <div className="login_page">
+        <div className="creation_box">
+          <div className="login_titleparagraph">
+            <h2 className="creation_title"></h2>
+            <button className="login_button" onClick={loadAllUsers} disabled={loading || !isAdmin} >{loading ? <span className="spinner" /> : (Object.keys(users).length > 0) ? "Reload the list" : "List all users"}</button>
+            {!isAdmin && <div className="deletion_admin_dual">
+              <svg className="admin_error_svg" xmlns="http://www.w3.org/2000/svg" strokeWidth={2} style={{ "margin": `4px` }} viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /></svg>
+              <span className="deletion_admin_paragraph">missing admin permission</span>
+            </div>}
+            {isAdmin && <input className={`search_input ${(Object.keys(users).length > 0) ? "" : "fade_out"}`} type="text" placeholder='Search by id' onChange={(e) => {
+              setSearchTerm(e.target.value);
+            }}></input>}
+          </div>
+          <div id="users_table">
+            {users.map((user, index) => user._id.startsWith(searchTerm) && (
+              <UserEntry key={user._id} user={user} searchLength={searchTerm.length} />
+            )
+            )}
+          </div>
+        </div>
       </div>
-      <div id="users_table">
-        <input type="text" placeholder='Search by id' onChange={(e) => {
-          setSearchTerm(e.target.value);
-        }}></input>
-        {users.map((user, index) => user._id.startsWith(searchTerm) && (
-          <UserEntry key={user._id} user={user} />
-        )
-        )}
+    </>
+  )
+}
+
+function Documentation() {
+  return (
+    <>
+      <div className="_page">
+        <div className="docu_page">
+          <h1 className="documentation_title">Documentation</h1>
+          <p className="documentation_paragraph"><strong>USERS-REST-API</strong> is an app developed with the MERN stack to offer basic CRUD operations for a user database. Its database is freely hosted on mongodb.com. The context of this project is the cours IFT3225 "Technologie de l'Internet" at Université de Montréal.</p>
+          <div className="route_summary">
+            <h1 className="documentation_title2">Endpoints</h1>
+            <h2 className="documentation_subtitle"><p className="method_box">GET</p> /motdepasse/{"{"}length{"}"}</h2>
+            <p className="documentation_paragraph">Generate an alphanumerical random password of a given length</p>
+            <p className="curl_box">curl http://localhost:3225/motdepasse/10 --header "Content-Type: application/json" --request GET</p>
+            <p className="documentation_paragraph">Return {"{"}return: number, password: string{"}"}</p>
+          </div>
+          <div className="route_summary">
+            <h2 className="documentation_subtitle"><p className="method_box">POST</p> /profils</h2>
+            <p className="documentation_paragraph">Insert a new user in the database</p>
+            <p className="curl_box">curl http://localhost:3225/profils --header "Content-Type: application/json" --request POST -d '{"{"}"email": "axel.seguin@umontreal.ca", "password": "abc123", "username": "axel", "isadmin": true{"}"}'</p>
+            <p className="documentation_paragraph">Body {"{"}email: string, username: string, password: string, isadmin: boolean{"}"}</p>
+            <p className="documentation_paragraph">Return {"{"}return: number{"}"}</p>
+          </div>
+          <div className="route_summary">
+            <h2 className="documentation_subtitle"><p className="method_box">POST</p> /connexion</h2>
+            <p className="documentation_paragraph">Retrieve a web token for the account</p>
+            <p className="curl_box">curl http://localhost:3225/connexion --header "Content-Type: application/json" --request POST -d '{"{"}"email": "axel.seguin@umontreal.ca", "password": "abc123"{"}"}'</p>
+            <p className="documentation_paragraph">Body {"{"}email: string, password: string{"}"}</p>
+            <p className="documentation_paragraph">Return {"{"}return: number, id: string, token: string{"}"}</p>
+            <p className="documentation_paragraph">Note that the token returned by this request has to be used for all the requests below, we suggest you to store it in the <strong>$token</strong> variable for all those curl commands.</p>
+          </div>
+          <div className="route_summary">
+            <h2 className="documentation_subtitle"><p className="method_box">GET</p> /self</h2>
+            <p className="documentation_paragraph">Retrieve my id</p>
+            <p className="curl_box">curl http://localhost:3225/self --header "Authorization: <strong>$token</strong>" --header "Content-Type: application/json" --request GET</p>
+            <p className="documentation_paragraph">Return {"{"}return: number, id: string{"}"}</p>
+          </div>
+          <div className="route_summary">
+            <h2 className="documentation_subtitle"><p className="method_box">DELETE</p> /profils/{"{"}id{"}"}</h2>
+            <p className="documentation_paragraph">Delete a user from the database with its id</p>
+            <p className="curl_box">curl http://localhost:3225/profils/69e3e4ce147de6a8ec51a87a --header "Authorization: <strong>$token</strong>" --header "Content-Type: application/json" --request DELETE</p>
+            <p className="documentation_paragraph">Return {"{"}return: number{"}"}</p>
+            <p className="documentation_paragraph">Only an administrator can execute this request</p>
+          </div>
+          <div className="route_summary">
+            <h2 className="documentation_subtitle"><p className="method_box">GET</p> /profils/{"{"}id{"}"}</h2>
+            <p className="documentation_paragraph">Get a user information from the database with its id</p>
+            <p className="curl_box">curl http://localhost:3225/profils/69e3e4ce147de6a8ec51a87a --header "Authorization: <strong>$token</strong>" --header "Content-Type: application/json" --request GET</p>
+            <p className="documentation_paragraph">Return {"{"}return: number, user: {"{"}email: string, username: string, isadmin: boolean, _id: string, created: Date, lastmodified: Date{"}"}{"}"}</p>
+            <p className="documentation_paragraph">Only yourself or an administrator can execute this request</p>
+          </div>
+          <div className="route_summary">
+            <h2 className="documentation_subtitle"><p className="method_box">GET</p> /profils</h2>
+            <p className="documentation_paragraph">Get all user information from the database</p>
+            <p className="curl_box">curl http://localhost:3225/profils --header "Authorization: <strong>$token</strong>" --header "Content-Type: application/json" --request GET</p>
+            <p className="documentation_paragraph">Return {"{"}return: number, users: Array{"}"}</p>
+            <p className="documentation_paragraph">Only an administrator can execute this request</p>
+          </div>
+          <div className="route_summary">
+            <h2 className="documentation_subtitle"><p className="method_box">PUT</p> /profils/{"{"}id{"}"}</h2>
+            <p className="documentation_paragraph">Edit user information in the database</p>
+            <p className="curl_box">curl http://localhost:3225/profils/69e3e97f147de6a8ec51a88e --header "Authorization: <strong>$token</strong>" --header "Content-Type: application/json" --request PUT -d '{"}"}"username": "axelS"{"}"}'</p>
+            <p className="documentation_paragraph">Body {"{"}email?: string, username?: string, isadmin?: boolean{"}"}</p>
+            <p className="documentation_paragraph">Return {"{"}return: number{"}"}</p>
+            <p className="documentation_paragraph">Only yourself or an administrator can execute this request</p>
+          </div>
+          <h1 className="documentation_title2">Return codes</h1>
+          <p className="documentation_paragraph">Every API response has a return field precising if the request was a success or the kind of error that occured.</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody><tr>
+              <td>322500</td>
+              <td>Success</td>
+            </tr>
+              <tr>
+                <td>322501</td>
+                <td>Server internal error</td>
+              </tr>
+              <tr>
+                <td>322502</td>
+                <td>Database internal error</td>
+              </tr>
+              <tr>
+                <td>322503</td>
+                <td>Not authorized</td>
+              </tr>
+              <tr>
+                <td>322504</td>
+                <td>Bad json input</td>
+              </tr>
+              <tr>
+                <td>322505</td>
+                <td>Invalid password</td>
+              </tr>
+              <tr>
+                <td>322506</td>
+                <td>Email already registered</td>
+              </tr>
+              <tr>
+                <td>322507</td>
+                <td>Invalid email</td>
+              </tr>
+              <tr>
+                <td>322508</td>
+                <td>Unkown user id</td>
+              </tr>
+              <tr>
+                <td>322509</td>
+                <td>Password length should be between 1 and 60</td>
+              </tr>
+              <tr>
+                <td>322510</td>
+                <td>Invalid web token</td>
+              </tr>
+              <tr>
+                <td>322511</td>
+                <td>Only a user may change its informations</td>
+              </tr>
+            </tbody></table>
+          <div className="github_div">
+            <svg xmlns="http://www.w3.org/2000/svg" className="github_svg" viewBox="0 0 24 24"><title>github</title><path fill="#fff" d="M12,2A10,10 0 0,0 2,12C2,16.42 4.87,20.17 8.84,21.5C9.34,21.58 9.5,21.27 9.5,21C9.5,20.77 9.5,20.14 9.5,19.31C6.73,19.91 6.14,17.97 6.14,17.97C5.68,16.81 5.03,16.5 5.03,16.5C4.12,15.88 5.1,15.9 5.1,15.9C6.1,15.97 6.63,16.93 6.63,16.93C7.5,18.45 8.97,18 9.54,17.76C9.63,17.11 9.89,16.67 10.17,16.42C7.95,16.17 5.62,15.31 5.62,11.5C5.62,10.39 6,9.5 6.65,8.79C6.55,8.54 6.2,7.5 6.75,6.15C6.75,6.15 7.59,5.88 9.5,7.17C10.29,6.95 11.15,6.84 12,6.84C12.85,6.84 13.71,6.95 14.5,7.17C16.41,5.88 17.25,6.15 17.25,6.15C17.8,7.5 17.45,8.54 17.35,8.79C18,9.5 18.38,10.39 18.38,11.5C18.38,15.32 16.04,16.16 13.81,16.41C14.17,16.72 14.5,17.33 14.5,18.26C14.5,19.6 14.5,20.68 14.5,21C14.5,21.27 14.66,21.59 15.17,21.5C19.14,20.16 22,16.42 22,12A10,10 0 0,0 12,2Z" /></svg>
+            <a className="login_a_signup" href="https://github.com/JakeTheRealOne/users-rest-api">Also available on GitHub</a>
+          </div>
+          <div className="spacer"></div>
+        </div>
+      </div>
+    </>
+  )
+}
+
+function TopBar({ user, logOut, setDocumentation, setCreating, setDeleting, setEditing, setShowingall }) {
+  function showDocumentation() {
+    setDocumentation(true)
+    setCreating(false)
+    setDeleting(false)
+    setEditing(false)
+    setShowingall(false)
+  }
+
+  function showCreation() {
+    setDocumentation(false)
+    setCreating(true)
+    setDeleting(false)
+    setEditing(false)
+    setShowingall(false)
+  }
+
+  function showDeletion() {
+    setDocumentation(false)
+    setCreating(false)
+    setDeleting(true)
+    setEditing(false)
+    setShowingall(false)
+  }
+
+  function showEdition() {
+    setDocumentation(false)
+    setCreating(false)
+    setDeleting(false)
+    setEditing(true)
+    setShowingall(false)
+  }
+
+  function showShowall() {
+    setDocumentation(false)
+    setCreating(false)
+    setDeleting(false)
+    setEditing(false)
+    setShowingall(true)
+  }
+
+  return (
+    <>
+      <div className="top_bar">
+        <div className="big_main_title">
+          <svg className="big_main_icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>account-box</title><path width={24} height={24} fill="#dadada" d="M6,17C6,15 10,13.9 12,13.9C14,13.9 18,15 18,17V18H6M15,9A3,3 0 0,1 12,12A3,3 0 0,1 9,9A3,3 0 0,1 12,6A3,3 0 0,1 15,9M3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3H5C3.89,3 3,3.9 3,5Z" /></svg>
+          <div className="big_main_dual">
+            <h1>
+              users-rest-api
+            </h1>
+            <h3 className="big_main_subtitle">
+              IFT3225 Projet 2
+            </h3>
+          </div>
+        </div>
+        <div className="nav_box">
+          <p className="nav" onClick={showDocumentation}>Documentation</p>
+          <p className="nav" onClick={showCreation}>Creation form</p>
+          <p className="nav" onClick={showDeletion}>Deletion form</p>
+          <p className="nav" onClick={showShowall}>Show all users</p>
+        </div>
+        <button onClick={showEdition}>EDIT PROFILE</button>
+        {/* <UserDropMenu user={user} logOut={logOut}  /> */}
       </div>
     </>
   )
@@ -1075,6 +1287,9 @@ function App() {
   const [creating, setCreating] = useState(false);
   const [signuping, setSignuping] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [showingall, setShowingall] = useState(false);
+  const [documentation, setDocumentation] = useState(true);
 
   useEffect(() => {
     if (token && !user.email && !getme) {
@@ -1151,30 +1366,25 @@ function App() {
       </>
     )
   } else if (token) {
-    if (creating) {
-      return (
-        <>
-          <CreationForm token={token} modEnable={setCreating} />
-        </>
-      )
-    } else if (deleting) {
-      return (
-        <>
-          <DeletionForm modEnable={setDeleting} token={token} isAdmin={user.isadmin} />
-        </>
-      )
-    } else {
-      return (
-        <>
-          <h1>Home page</h1>
-          <p>If you are seeing this, you are successfull connected as</p><strong>{user.email}</strong>
-          <UserDropMenu user={user} logOut={logOut} />
-          <button onClick={gotoCreationForm} >Create user</button>
-          <button onClick={gotoDeletionForm} >Delete user</button>
-          <ShowAllMenu token={token} isAdmin={user.isadmin} />
-        </>
-      )
-    }
+    return (
+      <>
+        <div className="home_div">
+          <TopBar user={user} logOut={logOut} setDocumentation={setDocumentation} setDeleting={setDeleting} setCreating={setCreating} setEditing={setEditing} setShowingall={setShowingall} />
+          {documentation &&
+            <Documentation />
+          }
+          {creating &&
+            <CreationForm token={token} modEnable={setCreating} />
+          }
+          {deleting &&
+            <DeletionForm modEnable={setDeleting} token={token} isAdmin={user.isadmin} />
+          }
+          {showingall &&
+            <ShowAllMenu token={token} isAdmin={user.isadmin} />
+          }
+        </div>
+      </>
+    )
   } else {
     return (
       <>
