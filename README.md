@@ -10,21 +10,41 @@ Website and API for user management
 
 ## Instalation
 
-Clone this repo.
+### Clone the repository
 
-### Dependencies
-
-Make sure to have nodejs 22 installed on your machine.
-
+```bash
+git clone git@github.com:JakeTheRealOne/users-rest-api.git
+cd users-rest-api
 ```
-npm init -y
-npm install express
+
+### Install the server
+
+From the root of the project
+```bash
+cd server/
+npm install
+```
+
+### Install the client
+
+From the root of the project
+```bash
+cd client/
+npm install
 ```
 
 ## Execution
 
+Run the server (http://localhost:3225):
+```bash
+cd server/
+node server.js
 ```
-TODO
+
+Run the client (accessible at http://localhost:5173):
+```bash
+cd client/
+npm run dev
 ```
 
 ## License
