@@ -1087,48 +1087,48 @@ function Documentation({isAdmin}) {
             <h2 className="documentation_subtitle"><p className="method_box">GET</p> /motdepasse/{"{"}length{"}"}</h2>
             <p className="documentation_paragraph">Generate an alphanumerical random password of a given length</p>
             <p className="curl_box">curl http://localhost:3225/motdepasse/10 --header "Content-Type: application/json" --request GET</p>
-            <p className="documentation_paragraph">Return {"{"}return: number, password: string{"}"}</p>
+            <p className="documentation_paragraph">Return {'{"return":322500,"password":"UNeRXdMUmQ"}'}</p>
           </div>
           <div className="route_summary">
             <h2 className="documentation_subtitle"><p className="method_box">POST</p> /profils</h2>
             <p className="documentation_paragraph">Insert a new user in the database</p>
             <p className="curl_box">curl http://localhost:3225/profils --header "Content-Type: application/json" --request POST -d '{"{"}"email": "axel.seguin@umontreal.ca", "password": "abc123", "username": "axel", "isadmin": true{"}"}'</p>
             <p className="documentation_paragraph">Body {"{"}email: string, username: string, password: string, isadmin: boolean{"}"}</p>
-            <p className="documentation_paragraph">Return {"{"}return: number{"}"}</p>
+            <p className="documentation_paragraph">Return {'{"return":322500}'}</p>
           </div>
           <div className="route_summary">
             <h2 className="documentation_subtitle"><p className="method_box">POST</p> /connexion</h2>
             <p className="documentation_paragraph">Retrieve a web token for the account</p>
             <p className="curl_box">curl http://localhost:3225/connexion --header "Content-Type: application/json" --request POST -d '{"{"}"email": "axel.seguin@umontreal.ca", "password": "abc123"{"}"}'</p>
             <p className="documentation_paragraph">Body {"{"}email: string, password: string{"}"}</p>
-            <p className="documentation_paragraph">Return {"{"}return: number, id: string, token: string{"}"}</p>
+            <p className="documentation_paragraph">Return {'{"return":322500,"id":"69e4446189bb61d186d952a7","token":"eyJhbGciOiJIUzI..."}'}</p>
             <p className="documentation_paragraph">Note that the token returned by this request has to be used for all the requests below, we suggest you to store it in the <strong>$token</strong> variable for all those curl commands.</p>
           </div>
           <div className="route_summary">
             <h2 className="documentation_subtitle"><p className="method_box">GET</p> /self</h2>
             <p className="documentation_paragraph">Retrieve my id</p>
             <p className="curl_box">curl http://localhost:3225/self --header "Authorization: <strong>$token</strong>" --header "Content-Type: application/json" --request GET</p>
-            <p className="documentation_paragraph">Return {"{"}return: number, id: string{"}"}</p>
+            <p className="documentation_paragraph">Return {'{"return":322500,"id":"69e4446189bb61d186d952a7"}'}</p>
           </div>
           {isAdmin && <div className="route_summary">
             <h2 className="documentation_subtitle"><p className="method_box">DELETE</p> /profils/{"{"}id{"}"}</h2>
             <p className="documentation_paragraph">Delete a user from the database with its id</p>
             <p className="curl_box">curl http://localhost:3225/profils/69e3e4ce147de6a8ec51a87a --header "Authorization: <strong>$token</strong>" --header "Content-Type: application/json" --request DELETE</p>
-            <p className="documentation_paragraph">Return {"{"}return: number{"}"}</p>
+            <p className="documentation_paragraph">Return {'{"return":322500}'}</p>
             <p className="documentation_paragraph">Only an administrator can execute this request</p>
           </div>}
           <div className="route_summary">
             <h2 className="documentation_subtitle"><p className="method_box">GET</p> /profils/{"{"}id{"}"}</h2>
             <p className="documentation_paragraph">Get a user information from the database with its id</p>
             <p className="curl_box">curl http://localhost:3225/profils/69e3e4ce147de6a8ec51a87a --header "Authorization: <strong>$token</strong>" --header "Content-Type: application/json" --request GET</p>
-            <p className="documentation_paragraph">Return {"{"}return: number, user: {"{"}email: string, username: string, isadmin: boolean, _id: string, created: Date, lastmodified: Date{"}"}{"}"}</p>
+            <p className="documentation_paragraph">Return {'{"return":322500,"user":{"_id": "69e4446189bb61d186d952a7", "email": "gilles.brassard@umontreal.ca","username": "Gilles Brassard", "isadmin": false, "created": "2026-04-19T02:56:33.681Z", "lastmodified": "2026-04-19T02:56:33.681Z"}}'}</p>
             <p className="documentation_paragraph">Only yourself or an administrator can execute this request</p>
           </div>
           {isAdmin && <div className="route_summary">
             <h2 className="documentation_subtitle"><p className="method_box">GET</p> /profils</h2>
             <p className="documentation_paragraph">Get all user information from the database</p>
             <p className="curl_box">curl http://localhost:3225/profils --header "Authorization: <strong>$token</strong>" --header "Content-Type: application/json" --request GET</p>
-            <p className="documentation_paragraph">Return {"{"}return: number, users: Array{"}"}</p>
+            <p className="documentation_paragraph">Return {'{"return":322500,"users":[{"_id": "69e4446189bb61d186d952a7","email": "gilles.brassard@umontreal.ca","username": "Gilles Brassard", "isadmin": false, "created": "2026-04-19T02:56:33.681Z", "lastmodified": "2026-04-19T02:56:33.681Z"}, {"_id": "69e4446189bb61d186d952a7", "email": "axel.seguin@umontreal.ca", "username":"Axel Seguin", "isadmin": true, "created": "2026-04-19T02:56:33.681Z", "lastmodified": "2026-04-19T02:56:33.681Z"}]}'}</p>
             <p className="documentation_paragraph">Only an administrator can execute this request</p>
           </div>}
           <div className="route_summary">
@@ -1136,7 +1136,7 @@ function Documentation({isAdmin}) {
             <p className="documentation_paragraph">Edit user information in the database</p>
             <p className="curl_box">curl http://localhost:3225/profils/69e3e97f147de6a8ec51a88e --header "Authorization: <strong>$token</strong>" --header "Content-Type: application/json" --request PUT -d '{"}"}"username": "axelS"{"}"}'</p>
             <p className="documentation_paragraph">Body {"{"}email?: string, username?: string, isadmin?: boolean{"}"}</p>
-            <p className="documentation_paragraph">Return {"{"}return: number{"}"}</p>
+            <p className="documentation_paragraph">Return {'{"return":322500}'}</p>
             <p className="documentation_paragraph">Only yourself or an administrator can execute this request</p>
           </div>
           <h1 className="documentation_title2 extra_margin">Return codes</h1>

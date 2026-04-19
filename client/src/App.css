@@ -860,7 +860,7 @@ p {
     font-size: 16px;
     padding: 0;
     width: 100%;
-    text-align: justify;
+    text-align: left;
 }
 
 .curl_box {
