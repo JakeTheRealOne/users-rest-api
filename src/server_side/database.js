@@ -99,6 +99,41 @@ async function addUser(email, username, password, isadmin) {
     return success;
 }
 
+// Add user to db (no check done)
+async function editUser(targetId, email, username, password, isadmin) {
+    const encrypted_pw = password ? await encrypt(password) : null; // Hash new password
+    const updates = {
+        email,
+        username,
+        encrypted_pw,
+        isadmin
+    };
+    const filteredUpdates = Object.fromEntries(
+        Object.entries(updates).filter(([_, v]) => v)
+    );
+
+    if (!(await initDB())) {
+        return false;
+    }
+
+    let success = false;
+    model = getDB();
+
+    try {
+        const updated = await model.findByIdAndUpdate(
+            targetId,
+            { $set: filteredUpdates },
+            { new: true }
+        );
+        success = (updated !== null);
+    } catch (error) {
+        console.log("[MongoDB] error - " + error);
+
+    }
+
+    return success;
+}
+
 // Remove user from db (no check done)
 async function deleteUser(id) {
     if (!(await initDB())) {
@@ -117,18 +152,6 @@ async function deleteUser(id) {
         return false;
     }
     return true;
-}
-
-// Edit user from db (no check done)
-//  Only edit defined fields
-function editUser(
-    id,
-    newemail = undefined,
-    newusername = undefined,
-    newpassword = undefined,
-    newisadmin = undefined,
-) {
-    // TODO
 }
 
 async function getUser(id) {
@@ -150,6 +173,21 @@ async function isAdmin(id) {
     return user ? user.isadmin : null;
 }
 
+// Check that the email and the id are from the same user
+async function emailIdMatch(id, email) {
+    if (email === null) {
+        console.log("Email is null");
+        return true;
+    }
+    if (id === null) {
+        console.log("Id is null");
+        return false;
+    }
+
+    const actualId = await idOf(email);
+    return actualId.equals(id);
+}
+
 // Return the _id of an email adress
 async function idOf(email) {
     if (!(await initDB())) {
@@ -160,6 +198,7 @@ async function idOf(email) {
 
     try {
         const user = await model.findOne({ email: email });
+        console.log("Id of: " + email + " " + JSON.stringify(user));
         return user ? user._id : null;
     } catch (err) {
         throw err;
@@ -195,4 +234,4 @@ async function getAllUsers() {
     return users;
 }
 
-module.exports = { initDB, emailExists, usernameExists, addUser, editUser, deleteUser, isAdmin, getUser, hashedPasswordOf, idOf, exists, getAllUsers };
+module.exports = { initDB, emailExists, usernameExists, addUser, editUser, deleteUser, isAdmin, getUser, hashedPasswordOf, idOf, exists, getAllUsers, emailIdMatch };

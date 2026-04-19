@@ -9,7 +9,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const { randomPassword, isValidLength, isValidCreateInput, isValidEmail, tokenSecret, isValidLoginInput, verify } = require('./utils');
-const { emailExists, addUser, hashedPasswordOf, idOf, deleteUser, getAllUsers, getUser } = require('./database');
+const { emailExists, addUser, editUser, hashedPasswordOf, idOf, deleteUser, getAllUsers, getUser, emailIdMatch } = require('./database');
 const authentification = require('./authentification');
 const authorization = require('./authorization');
 const I_am_me = require('./I_am_me');
@@ -193,12 +193,35 @@ app.get("/profils/:id", authentification, I_am_me, async (req, res, next) => {
     next();
 });
 
-app.put("/profils/:id", authentification, I_am_me, (req, res, next) => {
-    res.status(200);
-    res.json({
-        return: 322500,
-        message: `modify user with id ${req.params.id}`
-    });
+app.put("/profils/:id", authentification, I_am_me, async (req, res, next) => {
+    const targetId = req.params.id
+    const input_email = req.body.email || null;
+    const input_username = req.body.username || null;
+    const input_password = req.body.password || null;
+    const input_isadmin = req.body.isadmin;
+
+    if (!(await emailIdMatch(targetId, input_email))) { // Database error
+        res.status(500);
+        res.json({
+            return: 322506
+        });
+    } else if (input_email && !(await isValidEmail(input_email))) { // Invalid email
+        res.status(400);
+        res.json({
+            return: 322507
+        });
+    } else if (!(await editUser(targetId, input_email, input_username, input_password, input_isadmin))) {
+        res.status(500);
+        res.json({
+            return: 322502
+        });
+    } else {
+        res.status(200);
+        res.json({
+            return: 322500
+        });
+    }
+
     next();
 });
 

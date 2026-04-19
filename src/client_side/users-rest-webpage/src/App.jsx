@@ -1075,13 +1075,13 @@ function ShowAllMenu({ token, isAdmin }) {
   )
 }
 
-function Documentation() {
+function Documentation({isAdmin}) {
   return (
     <>
       <div className="_page">
         <div className="docu_page">
           <h1 className="documentation_title">Documentation</h1>
-          <p className="documentation_paragraph"><strong>USERS-REST-API</strong> is an app developed with the MERN stack to offer basic CRUD operations for a user database. Its database is freely hosted on mongodb.com. The context of this project is the cours IFT3225 "Technologie de l'Internet" at Université de Montréal.</p>
+          <p className="documentation_paragraph"><strong>USERS-REST-API</strong> is an app developed with the MERN stack to offer basic CRUD operations for a user database. Its database is freely hosted on mongodb.com. The context of this project is the course IFT3225 "Technologie de l'Internet" at Université de Montréal.</p>
           <div className="route_summary">
             <h1 className="documentation_title2">Endpoints</h1>
             <h2 className="documentation_subtitle"><p className="method_box">GET</p> /motdepasse/{"{"}length{"}"}</h2>
@@ -1110,13 +1110,13 @@ function Documentation() {
             <p className="curl_box">curl http://localhost:3225/self --header "Authorization: <strong>$token</strong>" --header "Content-Type: application/json" --request GET</p>
             <p className="documentation_paragraph">Return {"{"}return: number, id: string{"}"}</p>
           </div>
-          <div className="route_summary">
+          {isAdmin && <div className="route_summary">
             <h2 className="documentation_subtitle"><p className="method_box">DELETE</p> /profils/{"{"}id{"}"}</h2>
             <p className="documentation_paragraph">Delete a user from the database with its id</p>
             <p className="curl_box">curl http://localhost:3225/profils/69e3e4ce147de6a8ec51a87a --header "Authorization: <strong>$token</strong>" --header "Content-Type: application/json" --request DELETE</p>
             <p className="documentation_paragraph">Return {"{"}return: number{"}"}</p>
             <p className="documentation_paragraph">Only an administrator can execute this request</p>
-          </div>
+          </div>}
           <div className="route_summary">
             <h2 className="documentation_subtitle"><p className="method_box">GET</p> /profils/{"{"}id{"}"}</h2>
             <p className="documentation_paragraph">Get a user information from the database with its id</p>
@@ -1124,13 +1124,13 @@ function Documentation() {
             <p className="documentation_paragraph">Return {"{"}return: number, user: {"{"}email: string, username: string, isadmin: boolean, _id: string, created: Date, lastmodified: Date{"}"}{"}"}</p>
             <p className="documentation_paragraph">Only yourself or an administrator can execute this request</p>
           </div>
-          <div className="route_summary">
+          {isAdmin && <div className="route_summary">
             <h2 className="documentation_subtitle"><p className="method_box">GET</p> /profils</h2>
             <p className="documentation_paragraph">Get all user information from the database</p>
             <p className="curl_box">curl http://localhost:3225/profils --header "Authorization: <strong>$token</strong>" --header "Content-Type: application/json" --request GET</p>
             <p className="documentation_paragraph">Return {"{"}return: number, users: Array{"}"}</p>
             <p className="documentation_paragraph">Only an administrator can execute this request</p>
-          </div>
+          </div>}
           <div className="route_summary">
             <h2 className="documentation_subtitle"><p className="method_box">PUT</p> /profils/{"{"}id{"}"}</h2>
             <p className="documentation_paragraph">Edit user information in the database</p>
@@ -1276,10 +1276,236 @@ function TopBar({ user, logOut, documentation, setDocumentation, creating, setCr
           <div className="dropdown-content">
             <button className="option" onClick={showEdition}>
               <svg xmlns="http://www.w3.org/2000/svg" className="option_svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" stroke-linejoin="round"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /><path d="m15 5 4 4" /></svg>
-              Edit profile</button>
+              Profile</button>
             <button className="option red_option" onClick={logOut}>
               <svg xmlns="http://www.w3.org/2000/svg" className="red_svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m16 17 5-5-5-5" /><path d="M21 12H9" /><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /></svg> Log out</button>
           </div>
+        </div>
+      </div>
+    </>
+  )
+}
+
+function AccountMenu({ token, user, setUser }) {
+  const [newuser, setNewUser] = useState({
+    "email": user.email,
+    "username": user.username,
+    "isadmin": user.isadmin,
+    "password": user.password
+  });
+  const [editing, setEditing] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [changes, setChanges] = useState(false);
+  const [editingError, setEditingError] = useState("");
+  const [editingErrorVisible, setEditingErrorVisible] = useState("");
+  const [pwTooltip, setPwTooltip] = useState(false);
+  const [pwLength, setPWLength] = useState(15);
+  const [rgp, setRgp] = useState(false);
+  const [errortype, setErrorType] = useState(false);
+
+  useEffect(() => {
+    if (generating) {
+      setEditingErrorVisible(false);
+      setTimeout(() => {
+        fetch("http://localhost:3225/motdepasse/" + pwLength, {
+          method: "GET",
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          }
+        })
+          .then((response) => response.json())
+          .then((response) => {
+            if (response.return === 322500) {
+              setNewUser(prev => ({ ...prev, "password": response.password }));
+              setRgp(true);
+              setPwTooltip(false);
+            } else {
+              setErrorType(false);
+              changeErrorCode(response.return);
+            }
+          })
+          .catch((err) => {
+            console.log("Error: " + err);
+            setErrorType(false);
+            if (err.message.includes("NetworkError")) {
+              changeError("Network error");
+            } else {
+              changeError("Error");
+            }
+          })
+          .then(() => {
+            setGenerating(false);
+          })
+      }, 500);
+    }
+
+    if (editing) {
+      setEditingErrorVisible(false);
+      setTimeout(() => {
+        fetch("http://localhost:3225/profils/" + user.id, {
+          method: "PUT",
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': token
+          },
+          body: JSON.stringify(newuser)
+        })
+          .then((response) => response.json())
+          .then((response) => {
+            if (response.return === 322500) {
+              setUser(prev => {
+                return { ...prev, email: newuser.email, username: newuser.username, isadmin: newuser.isadmin }
+              })
+              setErrorType(true);
+              changeError("User information successfully edited");
+            } else {
+              setErrorType(false);
+              changeErrorCode(response.return);
+            }
+          })
+          .catch((err) => {
+            console.log("Error: " + err);
+            setErrorType(false);
+            if (err.message.includes("NetworkError")) {
+              changeError("Network error");
+            } else {
+              changeError("Error");
+            }
+          })
+          .then(() => {
+            setEditing(false);
+          })
+      }, 500);
+    }
+  }, [editing, generating]);
+
+  function changeError(new_error) {
+    setEditingErrorVisible(false);
+
+    setTimeout(() => {
+      setEditingError(new_error)
+      setEditingErrorVisible(true);
+    }, 150);
+  };
+
+  function changeErrorCode(new_error_code) {
+    const errorTxt = getErrorMessage(new_error_code)
+
+    setEditingErrorVisible(false);
+
+    setTimeout(() => {
+      setEditingError(errorTxt)
+      setEditingErrorVisible(true);
+    }, 150);
+  };
+
+  function showRandomTooltip(e) {
+    setPwTooltip(!pwTooltip)
+    e.preventDefault();
+  }
+
+  function generateButtonClicked(e) {
+    console.log("generating");
+    setGenerating(true);
+    e.preventDefault();
+  }
+
+
+  function edit() {
+    if (changes) {
+      setEditing(true);
+    }
+  }
+
+
+  return (
+    <>
+      <div className="am_page">
+        <div className="am_box">
+          <div className="am_div">
+            <div className="am_icondiv">
+              <UIcon admin={newuser.isadmin} big={true} />
+              {/* <label className="login_label">administrator</label> */}
+
+              <label className="admin_switch">
+                <input className="admin_checkbox" type="checkbox" id="isadmin" checked={newuser.isadmin} onChange={() => {
+                  setChanges(true)
+                  setNewUser(prev => {
+                    return { ...prev, isadmin: !prev.isadmin }
+                  })
+                }} disabled={editing}></input>
+                <span className="slider round"></span>
+              </label>
+            </div>
+            <div className="am_inputdiv">
+              <div className="login_labelandinput">
+                {/* <label className="login_label">id</label> */}
+                <input className="editing_id_input" type="text" id="id" value={user.id} disabled={true}></input>
+              </div>
+              <div className="login_labelandinput">
+                <label className="login_label">username</label>
+                <input className="editing_input" type="text" id="amusername" value={newuser.username} onChange={e => {
+                  setChanges(true)
+                  setNewUser(prev => {
+                    return { ...prev, username: e.target.value }
+                  })
+                }} disabled={editing}></input>
+              </div>
+              <div className="login_labelandinput">
+                <label className="login_label">email</label>
+                <input className="editing_input" type="text" id="amemail" value={newuser.email} onChange={e => {
+                  setChanges(true)
+                  setNewUser(prev => {
+                    return { ...prev, email: e.target.value }
+                  })
+                }} disabled={editing}></input>
+              </div>
+              <div className="login_labelandinput">
+                <label className="login_label">password</label>
+                <div className="editing_pw_input">
+                  <input className="inner_pw_input" disabled={editing} value={newuser.password} placeholder="a strong one" type={rgp ? "text" : "password"} id="ampassword" onChange={e => {
+                    setChanges(true)
+                    setRgp(false);
+                    setNewUser(prev => {
+                      return { ...prev, password: e.target.value }
+                    })
+                  }}></input>
+                  <div className="wrapper">
+                    {pwTooltip && (
+                      <div className="tooltip">
+                        <label className="pw_title">random password</label>
+                        <div className="pw_range_box">
+                          <input
+                            type="range"
+                            min="1" max="60"
+                            value={pwLength}
+                            onChange={(e) => setPWLength(e.target.value)}
+                            disabled={editing}
+                          />
+                          <label className="pw_value">{pwLength}</label>
+                        </div>
+                        <button className="gen_button" onClick={e => {
+                          generateButtonClicked(e)
+                        }} disabled={editing || generating}>{generating ? <span className="spinner" /> : "Generate"}</button>
+
+                        {/* caret */}
+                        <div className="tooltip-arrow-outline" />
+                        <div className="tooltip-arrow" />
+                      </div>
+                    )}
+
+                    <button disabled={editing} className="dice_btn" onClick={e => showRandomTooltip(e)} >
+                      <svg className="dice_svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M141.4 2.3C103-8 63.5 14.8 53.3 53.2L2.5 242.7C-7.8 281.1 15 320.6 53.4 330.9l189.5 50.8c38.4 10.3 77.9-12.5 88.2-50.9l50.8-189.5c10.3-38.4-12.5-77.9-50.9-88.2L141.4 2.3zm23 205.7a32 32 0 1 1 55.4-32 32 32 0 1 1 -55.4 32zM79.2 220.3a32 32 0 1 1 32 55.4 32 32 0 1 1 -32-55.4zm185 96.4a32 32 0 1 1 -32-55.4 32 32 0 1 1 32 55.4zm9-208.4a32 32 0 1 1 32 55.4 32 32 0 1 1 -32-55.4zm-121 14.4a32 32 0 1 1 -32-55.4 32 32 0 1 1 32 55.4zM418 192L377.4 343.2c-17.2 64-83 102-147 84.9l-38.3-10.3 0 30.2c0 35.3 28.7 64 64 64l192 0c35.3 0 64-28.7 64-64l0-192c0-35.3-28.7-64-64-64L418 192z" /></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button className="green_login_button" onClick={edit} disabled={!changes || editing} >{editing ? <span className="green_spinner" /> : "Confirm changes"}</button>
+          <p className={`login_note_p ${errortype ? "login_success_p" : "login_failed_p"} ${editingErrorVisible ? "" : "fade_out"}`}>{editingError}</p>
         </div>
       </div>
     </>
@@ -1301,6 +1527,10 @@ function App() {
   const [editing, setEditing] = useState(false);
   const [showingall, setShowingall] = useState(false);
   const [documentation, setDocumentation] = useState(true);
+
+  useEffect(() => {
+    document.title = "Users REST API";
+  }, []);
 
   useEffect(() => {
     if (token && !user.email && !getme) {
@@ -1382,7 +1612,7 @@ function App() {
         <div className="home_div">
           <TopBar user={user} logOut={logOut} documentation={documentation} creating={creating} deleting={deleting} showingall={showingall} editing={editing} setDocumentation={setDocumentation} setDeleting={setDeleting} setCreating={setCreating} setEditing={setEditing} setShowingall={setShowingall} />
           {documentation &&
-            <Documentation />
+            <Documentation isAdmin={user.isadmin} />
           }
           {creating &&
             <CreationForm token={token} modEnable={setCreating} />
@@ -1392,6 +1622,9 @@ function App() {
           }
           {showingall &&
             <ShowAllMenu token={token} isAdmin={user.isadmin} />
+          }
+          {editing &&
+            <AccountMenu token={token} user={user} setUser={setUser} />
           }
         </div>
       </>
