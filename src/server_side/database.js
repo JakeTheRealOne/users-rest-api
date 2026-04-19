@@ -101,15 +101,15 @@ async function addUser(email, username, password, isadmin) {
 
 // Add user to db (no check done)
 async function editUser(targetId, email, username, password, isadmin) {
-    const encrypted_pw = password ? await encrypt(password) : null; // Hash new password
+    const encrypted_pw = password ? (await encrypt(password)) : null; // Hash new password
     const updates = {
         email,
         username,
-        encrypted_pw,
+        "password": encrypted_pw,
         isadmin
     };
     const filteredUpdates = Object.fromEntries(
-        Object.entries(updates).filter(([_, v]) => v)
+        Object.entries(updates).filter(([_, v]) => (v !== null))
     );
 
     if (!(await initDB())) {
@@ -176,16 +176,14 @@ async function isAdmin(id) {
 // Check that the email and the id are from the same user
 async function emailIdMatch(id, email) {
     if (email === null) {
-        console.log("Email is null");
         return true;
     }
     if (id === null) {
-        console.log("Id is null");
         return false;
     }
 
     const actualId = await idOf(email);
-    return actualId.equals(id);
+    return !actualId || actualId.equals(id);
 }
 
 // Return the _id of an email adress
@@ -198,7 +196,6 @@ async function idOf(email) {
 
     try {
         const user = await model.findOne({ email: email });
-        console.log("Id of: " + email + " " + JSON.stringify(user));
         return user ? user._id : null;
     } catch (err) {
         throw err;

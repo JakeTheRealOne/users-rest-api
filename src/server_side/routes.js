@@ -199,6 +199,7 @@ app.put("/profils/:id", authentification, I_am_me, async (req, res, next) => {
     const input_username = req.body.username || null;
     const input_password = req.body.password || null;
     const input_isadmin = req.body.isadmin;
+    console.log(input_isadmin);
 
     if (!(await emailIdMatch(targetId, input_email))) { // Database error
         res.status(500);

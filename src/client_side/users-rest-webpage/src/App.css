@@ -711,6 +711,9 @@ p {
     font-size: 12px;
     border-radius: 4px;
     text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .user_utype {
@@ -1003,6 +1006,14 @@ table td {
     padding: 4px;
     gap: 8px;
     display: flex;
+    text-overflow: clip;
+    word-break: keep-all;
+
+    strong {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 }
 
 .tripial_entry {
@@ -1016,6 +1027,7 @@ table td {
     flex-direction: column;
     gap: 16px;
     height: 50vh;
+    overflow-y: auto;
 }
 
 .id_text {
