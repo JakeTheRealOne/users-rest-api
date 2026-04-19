@@ -899,7 +899,7 @@ function AuthForm({ modToken, modUser, modCreating }) {
   )
 }
 
-function UserDropMenu({ user, logOut }) {
+function UserDropMenu({ user }) {
   return (
     <>
       <div className="user_dropmenu">
@@ -921,8 +921,8 @@ function UIcon({ admin, big }) {
       <div className={`uicon ${admin ? "admin_uicon" : "user_uicon"} ${big ? "big_uicon" : "small_uicon"}`}>
         {/* {admin ? } */}
         {admin ?
-          <svg xmlns="http://www.w3.org/2000/svg" strokeWidth={0.5} style={{ "margin": `${big ? '24px' : '8px'}` }} viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /></svg> :
-          <svg xmlns="http://www.w3.org/2000/svg" strokeWidth={0.5} style={{ "margin": `${big ? '20px' : '4px'}` }} viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" strokeWidth={0.5} style={{ "margin": `${big ? '24px' : '16%'}` }} viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /></svg> :
+          <svg xmlns="http://www.w3.org/2000/svg" strokeWidth={0.5} style={{ "margin": `${big ? '20px' : '16%'}` }} viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
         }
 
       </div>
@@ -1063,6 +1063,7 @@ function ShowAllMenu({ token, isAdmin }) {
             }}></input>}
           </div>
           <div id="users_table">
+            <p className="login_note_p login_failed_p">{usersError}</p>
             {users.map((user, index) => user._id.startsWith(searchTerm) && (
               <UserEntry key={user._id} user={user} searchLength={searchTerm.length} />
             )
@@ -1138,7 +1139,7 @@ function Documentation() {
             <p className="documentation_paragraph">Return {"{"}return: number{"}"}</p>
             <p className="documentation_paragraph">Only yourself or an administrator can execute this request</p>
           </div>
-          <h1 className="documentation_title2">Return codes</h1>
+          <h1 className="documentation_title2 extra_margin">Return codes</h1>
           <p className="documentation_paragraph">Every API response has a return field precising if the request was a success or the kind of error that occured.</p>
           <table>
             <thead>
@@ -1207,7 +1208,7 @@ function Documentation() {
   )
 }
 
-function TopBar({ user, logOut, setDocumentation, setCreating, setDeleting, setEditing, setShowingall }) {
+function TopBar({ user, logOut, documentation, setDocumentation, creating, setCreating, deleting, setDeleting, editing, setEditing, showingall, setShowingall }) {
   function showDocumentation() {
     setDocumentation(true)
     setCreating(false)
@@ -1254,7 +1255,7 @@ function TopBar({ user, logOut, setDocumentation, setCreating, setDeleting, setE
         <div className="big_main_title">
           <svg className="big_main_icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>account-box</title><path width={24} height={24} fill="#dadada" d="M6,17C6,15 10,13.9 12,13.9C14,13.9 18,15 18,17V18H6M15,9A3,3 0 0,1 12,12A3,3 0 0,1 9,9A3,3 0 0,1 12,6A3,3 0 0,1 15,9M3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3H5C3.89,3 3,3.9 3,5Z" /></svg>
           <div className="big_main_dual">
-            <h1>
+            <h1 className="big_main_h1">
               users-rest-api
             </h1>
             <h3 className="big_main_subtitle">
@@ -1263,13 +1264,23 @@ function TopBar({ user, logOut, setDocumentation, setCreating, setDeleting, setE
           </div>
         </div>
         <div className="nav_box">
-          <p className="nav" onClick={showDocumentation}>Documentation</p>
-          <p className="nav" onClick={showCreation}>Creation form</p>
-          <p className="nav" onClick={showDeletion}>Deletion form</p>
-          <p className="nav" onClick={showShowall}>Show all users</p>
+          <p className={`nav ${documentation ? "selected_nav" : "unselected_nav"}`} onClick={showDocumentation}>Documentation</p>
+          <p className={`nav ${creating ? "selected_nav" : "unselected_nav"}`} onClick={showCreation}>Creation form</p>
+          <p className={`nav ${deleting ? "selected_nav" : "unselected_nav"}`} onClick={showDeletion}>Deletion form</p>
+          <p className={`nav ${showingall ? "selected_nav" : "unselected_nav"}`} onClick={showShowall}>Show all users</p>
         </div>
-        <button onClick={showEdition}>EDIT PROFILE</button>
-        {/* <UserDropMenu user={user} logOut={logOut}  /> */}
+
+        <div className="dropdown">
+          <button className="dropbtn"><UserDropMenu user={user} /></button>
+
+          <div className="dropdown-content">
+            <button className="option" onClick={showEdition}>
+              <svg xmlns="http://www.w3.org/2000/svg" className="option_svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" stroke-linejoin="round"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /><path d="m15 5 4 4" /></svg>
+              Edit profile</button>
+            <button className="option red_option" onClick={logOut}>
+              <svg xmlns="http://www.w3.org/2000/svg" className="red_svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m16 17 5-5-5-5" /><path d="M21 12H9" /><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /></svg> Log out</button>
+          </div>
+        </div>
       </div>
     </>
   )
@@ -1369,7 +1380,7 @@ function App() {
     return (
       <>
         <div className="home_div">
-          <TopBar user={user} logOut={logOut} setDocumentation={setDocumentation} setDeleting={setDeleting} setCreating={setCreating} setEditing={setEditing} setShowingall={setShowingall} />
+          <TopBar user={user} logOut={logOut} documentation={documentation} creating={creating} deleting={deleting} showingall={showingall} editing={editing} setDocumentation={setDocumentation} setDeleting={setDeleting} setCreating={setCreating} setEditing={setEditing} setShowingall={setShowingall} />
           {documentation &&
             <Documentation />
           }
